@@ -13,7 +13,7 @@ export async function POST(_req: Request) {
   }
 
   const child = exec(
-    `sh ./cli/test.sh "${name}"`,
+    `sh ./cli/tenant.sh "${name}"`,
     (error: any, stdout: any, stderr: any) => {
       console.log(stdout);
       console.log(stderr);
