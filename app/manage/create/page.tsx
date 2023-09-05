@@ -34,13 +34,19 @@ export default async function Page() {
 
       <h1>Create new project</h1>
 
-      <form
-        action={create}
-        className="rounded-lg border border-stone-200 bg-white dark:border-stone-700 dark:bg-black"
-      >
-        <input type="text" name="name" placeholder="Project name" />
+      <form action={create} className="mt-4 flex gap-1">
+        <input
+          type="text"
+          name="name"
+          placeholder="Project name"
+          className="p-2 border"
+        />
 
-        <input type="submit" value="Create" />
+        <input
+          type="submit"
+          value="Create"
+          className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-full"
+        />
       </form>
     </div>
   );
