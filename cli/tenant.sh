@@ -35,8 +35,6 @@ rm -rf .git
 touch ".env.development.tmp"
 echo $1 >> ".env.development.tmp"
 
-exit 0;
-
 # get sanity auth token
 authToken=$(sanity debug --secrets | grep 'Auth token' | cut -d \' -f2)
 
@@ -123,9 +121,8 @@ vercel --prod --no-wait
 
 colorPrint "- Inviting Sanity users"
 
-# sanity users invite dan@mawla.ie --role administrator
-# sanity users invite arjen@mawla.ie --role administrator
-# sanity users invite ben@mawla.ie --role administrator
+sanity users invite dan@mawla.ie --role administrator
+sanity users invite arjen@mawla.ie --role administrator
 
 
 # Remove tmp directory
