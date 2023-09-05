@@ -1,5 +1,6 @@
 import Link from "next/link";
 import cx from "classnames";
+import { notFound } from "next/navigation";
 
 async function getProject(project: string) {
   // get the project data from Vercel
@@ -14,6 +15,10 @@ async function getProject(project: string) {
   );
 
   const projectData = await projectRes.json();
+
+  if (projectData.error) {
+    return null;
+  }
 
   // get the sanity project ID variable from Vercel
   const envVarSanityProjectId = projectData.env.find(
@@ -72,6 +77,11 @@ export default async function Page({
   const project = params.project;
 
   const projectData = await getProject(project);
+
+  if (!projectData) {
+    notFound();
+  }
+
   const state = projectData.vercel.targets.production.readyState;
   const url = projectData.vercel.targets.production.alias[0];
 
