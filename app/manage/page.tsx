@@ -2,10 +2,10 @@ import Link from "next/link";
 
 async function getProjects() {
   const res = await fetch(
-    `https://api.vercel.com/v9/projects?teamId=${process.env.VERCEL_TEAM_ID}&repoUrl=https://github.com/Mawla/growth-websites&limit=100`,
+    `https://api.vercel.com/v9/projects?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}&repoUrl=https://github.com/Mawla/growth-websites&limit=100`,
     {
       headers: {
-        Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
+        Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
       },
       method: "get",
     },

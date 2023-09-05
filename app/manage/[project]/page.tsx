@@ -4,10 +4,10 @@ import cx from "classnames";
 async function getProject(project: string) {
   // get the project data from Vercel
   const projectRes = await fetch(
-    `https://api.vercel.com/v9/projects/${project}?teamId=${process.env.VERCEL_TEAM_ID}`,
+    `https://api.vercel.com/v9/projects/${project}?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
     {
       headers: {
-        Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
+        Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
       },
       method: "get",
     },
@@ -20,10 +20,10 @@ async function getProject(project: string) {
     (env: any) => env.key === "NEXT_PUBLIC_SANITY_PROJECT_ID",
   ).id;
   const sanityProjectIdEnvVarRes = await fetch(
-    `https://vercel.com/api/v1/projects/${project}/env/${envVarSanityProjectId}?teamId=${process.env.VERCEL_TEAM_ID}`,
+    `https://vercel.com/api/v1/projects/${project}/env/${envVarSanityProjectId}?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
     {
       headers: {
-        Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
+        Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
       },
       method: "get",
     },
