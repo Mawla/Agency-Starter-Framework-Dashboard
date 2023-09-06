@@ -5,7 +5,6 @@ const path = require("path");
 const nextConfig = {
   experimental: {
     serverActions: true,
-    outputFileTracingRoot: path.join(__dirname, "../"),
     outputFileTracingIncludes: {
       "/api/projects": ["./cli/tenant.sh"],
     },
