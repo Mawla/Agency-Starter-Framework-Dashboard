@@ -1,6 +1,8 @@
 import Link from "next/link";
 import cx from "classnames";
 import { notFound } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 async function getProject(project: string) {
   // get the project data from Vercel
@@ -86,34 +88,10 @@ export default async function Page({
   const url = projectData.vercel.targets.production.alias[0];
 
   return (
-    <div>
-      <div className="border-b pb-4 mb-4">
-        ‹ <Link href="/manage">back to manage</Link>
-      </div>
-
-      <h1>{project}</h1>
-
-      <span
-        className={cx("text-xs font-medium mr-2 px-2.5 py-0.5 rounded", {
-          ["bg-green-100 text-green-800"]: state === "READY",
-          ["bg-yellow-100 text-yellow-800"]: [
-            "INITIALIZING",
-            "BUILDING",
-          ].includes(state),
-          ["bg-red-100 text-red-800"]: state === "ERROR",
-          ["bg-gray-100 text-gray-800"]: state === "QUEUED",
-          ["bg-orange-100 text-orange-800"]: state === "CANCELED",
-        })}
-      >
-        {state}
-      </span>
-
-      <Link href={url}>{url}</Link>
-
-      <hr className="my-10" />
-
-      <p>Everything we know about this project from Vercel and Sanity:</p>
-      <pre>{JSON.stringify(projectData, null, 2)}</pre>
+    <div className="py-10 border-t">
+      project overview here
+      {/* <p>Everything we know about this project from Vercel and Sanity:</p> */}
+      {/* <pre>{JSON.stringify(projectData, null, 2)}</pre> */}
     </div>
   );
 }

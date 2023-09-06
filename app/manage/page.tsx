@@ -1,3 +1,12 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 async function getProjects() {
@@ -12,39 +21,89 @@ async function getProjects() {
   );
 
   const { projects } = await res.json();
-  const projectNames = projects.map((project: any) => project.name);
-  return { projects: projectNames };
+  return {
+    projects: projects.map((project: any) => ({
+      name: project.name,
+      url: project.targets.production.alias[0],
+    })),
+  };
 }
 
 export default async function Page({ params }: { params: { userid: string } }) {
   const projectData = await getProjects();
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4">
-        <h2>Create new project</h2>
-        <div>
-          <Link
-            href="/manage/create"
-            className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-full"
-          >
-            Create new
-          </Link>
+    <div className="grid grid-cols-6">
+      <div className="col-span-1 p-10">
+        <ul className="divide-y divide-y-gray-100">
+          <li className="p-2">
+            <Link href="/manage">Websites</Link>
+          </li>
+          <li className="p-2">
+            <Link href="/account">Account</Link>
+          </li>
+        </ul>
+      </div>
+      <div className="col-span-5 p-10">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create new website</CardTitle>
+                <CardDescription>
+                  Deploy your new project in one-click.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild>
+                  <Link href="/manage/create">Create new</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <hr className="my-10" />
+          <h1 className="text-xl font-semibold">Your projects</h1>
+
+          {projectData?.projects && (
+            <div className="grid grid-cols-4 gap-4">
+              {projectData?.projects.map((project: any) => (
+                <div key={project.name}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>
+                        <Link
+                          href={`/manage/${project.name}`}
+                          className="hover:underline"
+                        >
+                          {project.name}
+                        </Link>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex gap-2">
+                        <Button asChild variant="default">
+                          <Link href={`/manage/${project.name}`}>Manage</Link>
+                        </Button>
+                        <Button asChild variant="outline">
+                          <Link
+                            href={`https://${project.url}`}
+                            target="_blank"
+                            className="flex gap-1 items-center"
+                          >
+                            Visit
+                            <ExternalLink size={16} strokeWidth={1.5} />
+                          </Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      <hr className="my-10" />
-      <h1>All projects</h1>
-
-      {projectData?.projects && (
-        <ul>
-          {projectData?.projects.map((project: any) => (
-            <li key={project}>
-              › <Link href={`/manage/${project}`}>{project}</Link>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }

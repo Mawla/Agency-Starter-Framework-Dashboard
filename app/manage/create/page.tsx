@@ -1,7 +1,16 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs";
-import type { User } from "@clerk/nextjs/api";
 
 export default async function Page() {
   async function create(formData: FormData) {
@@ -32,31 +41,44 @@ export default async function Page() {
     redirect(`/manage/${name}`);
   }
 
-  const user: User | null = await currentUser();
-
   return (
-    <div>
-      {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
-      <div className="border-b pb-4 mb-4">
-        ‹ <Link href="/manage">back to manage</Link>
+    <div className="grid grid-cols-4 gap-10 p-10">
+      <div className="">
+        <Card>
+          <CardHeader>
+            <CardTitle>Create project</CardTitle>
+            <CardDescription>
+              Deploy your new project in one-click.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={create}>
+              <div className="grid w-full items-center gap-4">
+                <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Name of your project"
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" asChild>
+              <Link href="/manage">Cancel</Link>
+            </Button>
+            <Button asChild>
+              <input type="submit" value="Create" />
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
 
-      <h1>Create new project</h1>
-
-      <form action={create} className="mt-4 flex gap-1">
-        <input
-          type="text"
-          name="name"
-          placeholder="Project name"
-          className="p-2 border"
-        />
-
-        <input
-          type="submit"
-          value="Create"
-          className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-full"
-        />
-      </form>
+      <div className="border h-full col-span-3 p-4 font-mono text-sm bg-gray-100">
+        …deploy log here?
+      </div>
     </div>
   );
 }
