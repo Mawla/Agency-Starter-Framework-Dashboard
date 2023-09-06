@@ -3,7 +3,6 @@ import { slugify } from "@/lib/utils";
 import { auth } from "@clerk/nextjs";
 import { groq } from "next-sanity";
 import { NextResponse } from "next/server";
-import path from "path";
 
 const { exec } = require("child_process");
 
@@ -59,11 +58,7 @@ export async function POST(_req: Request) {
   log(`Added project to user ${sanityUserId}`);
 
   const child = exec(
-    `sh ${path.join(
-      process.cwd(),
-      "cli",
-      "tenant.sh",
-    )} "${projectName}" ${userId}`,
+    `sh ./cli/tenant.sh "${projectName}" ${userId}`,
     (error: any, stdout: any, stderr: any) => {
       log(stdout);
       log(stderr);
