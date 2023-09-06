@@ -1,15 +1,7 @@
-export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID as string,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET as string,
-  useCdn: false,
-  apiVersion: "2023-05-03",
-  token: process.env.SANITY_WRITE_TOKEN as string,
-});
-
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { createClient } from "@sanity/client";
+import { serverClient } from "@/lib/sanity.server";
 
 const webhookSecret: string = process.env.CLERK_WEBHOOK_SECRET || "";
 
@@ -48,7 +40,7 @@ export async function POST(req: Request) {
   // Handle the webhook
   const eventType = evt.type;
   if (eventType === "user.created") {
-    await client.create({
+    await serverClient.create({
       _type: "user",
       clerk: {
         id,
