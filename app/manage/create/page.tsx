@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -11,9 +10,7 @@ export default async function Page() {
       throw new Error("Invalid name");
     }
 
-    const host = headers().get("host");
-    const protocol = process?.env.NODE_ENV === "development" ? "http" : "https";
-    const res = await fetch(`${protocol}://${host}/api/projects/`, {
+    const res = await fetch(`${process.env.API_URL}/api/projects/`, {
       cache: "no-store",
       method: "POST",
       body: JSON.stringify({ name }),
