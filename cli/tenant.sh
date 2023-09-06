@@ -22,15 +22,20 @@ scope=mawla-team
 # colorPrint "What's the name of the project?"
 # read -p "name:" name
 
-name=$1
+projectName=$1
+userId=$2
+folderName="$1-$2"
+
 colorPrint "Okay, slugified naming for Vercel"
-projectName=$(echo "$name" | toSlug $name)
+projectName=$(echo "$projectName" | toSlug $projectName)
 echo $projectName
 
-mkdir -p "tmp/$projectName"
+exit 0;
+
+mkdir -p "tmp/$folderName"
 cd "./tmp"
-git clone "$gitURL" "$projectName"
-cd "./$projectName"
+git clone "$gitURL" "$folderName"
+cd "./$folderName"
 rm -rf .git
 touch ".env.development.tmp"
 echo $1 >> ".env.development.tmp"
@@ -45,7 +50,7 @@ result=$(curl --silent POST 'https://api.sanity.io/v2021-06-07/projects' \
 -H "Authorization: Bearer $authToken" \
 -H 'Content-Type:application/json' \
 -d "{
-    \"displayName\": \"$name\",
+    \"displayName\": \"$projectName\",
     \"organizationId\": \"off6YjRVq\"
 }")
 
@@ -126,7 +131,7 @@ sanity users invite arjen@mawla.ie --role administrator
 
 
 # Remove tmp directory
-rm -rf "../$projectName"
+rm -rf "../$folderName"
 
 
 colorPrint "Done!"

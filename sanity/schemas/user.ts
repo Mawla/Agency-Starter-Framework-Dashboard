@@ -4,17 +4,23 @@ export default defineType({
   name: "user",
   type: "document",
   title: "User",
+  preview: {
+    select: {
+      firstname: "clerk.first_name",
+      lastname: "clerk.last_name",
+    },
+    prepare({ firstname, lastname }) {
+      return {
+        title: `${firstname} ${lastname}`,
+      };
+    },
+  },
   fields: [
-    defineField({
-      name: "name",
-      type: "string",
-      title: "Name",
-    }),
     defineField({
       name: "clerk",
       type: "object",
       title: "Clerk",
-      readOnly: true,
+      readOnly: false,
       fields: [
         defineField({
           name: "id",

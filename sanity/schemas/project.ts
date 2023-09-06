@@ -6,14 +6,17 @@ export default defineType({
   title: "Project",
   fields: [
     defineField({
-      name: "name",
+      name: "title",
       type: "string",
-      title: "Name",
+      title: "Title",
     }),
     defineField({
       name: "slug",
-      type: "string",
+      type: "slug",
       title: "Slug",
+      options: {
+        source: "title",
+      },
     }),
     defineField({
       name: "vercel",
@@ -36,6 +39,11 @@ export default defineType({
           type: "string",
         }),
       ],
+    }),
+    defineField({
+      name: "log",
+      type: "array",
+      of: [{ type: "string" }],
     }),
   ],
 });

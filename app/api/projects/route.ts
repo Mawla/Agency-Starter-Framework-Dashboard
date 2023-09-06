@@ -1,25 +1,64 @@
+import { sanityServerClient } from "@/lib/sanity.server";
+import { auth } from "@clerk/nextjs";
+import { groq } from "next-sanity";
 import { NextResponse } from "next/server";
 
 const { exec } = require("child_process");
 
 export async function POST(_req: Request) {
+  const { userId }: { userId: string | null } = auth();
   const res = await _req.json();
-  const name = res.name;
+  const projectName = res.projectName;
 
-  if (!name) {
+  /* Mirror logs to sanity */
+  async function log(msg: string) {
+    if (!msg.trim().length) return;
+    msg = msg.replace("[0;36m", "").replace("[0m", "");
+
+    sanityServerClient
+      .patch(projectId)
+      .insert("after", "log[-1]", [msg])
+      .commit();
+  }
+
+  if (!projectName) {
     return NextResponse.json({
       ok: 0,
     });
   }
 
+  // create new project
+  const { _id: projectId } = await sanityServerClient.create({
+    _type: "project",
+    title: projectName,
+    log: ["Created project from API"],
+  });
+
+  // get sanity user id
+  const sanityUserId = await sanityServerClient.fetch(
+    groq`*[_type == 'user' && clerk.id == $userId][0]._id`,
+    { userId },
+  );
+
+  // add project to user
+  sanityServerClient
+    .patch(sanityUserId)
+    .setIfMissing({ projects: [] })
+    .insert("after", "projects[-1]", [{ _type: "reference", _ref: projectId }])
+    .commit({
+      autoGenerateArrayKeys: true,
+    });
+
+  log(`Added project to user ${sanityUserId}`);
+
   const child = exec(
-    `sh ./cli/tenant.sh "${name}"`,
+    `sh ./cli/tenant.sh "${projectName}" ${userId}`,
     (error: any, stdout: any, stderr: any) => {
-      console.log(stdout);
-      console.log(stderr);
+      log(stdout);
+      log(stderr);
 
       if (error !== null) {
-        console.log(error);
+        log(error);
       }
     },
   );
@@ -36,61 +75,3 @@ export async function POST(_req: Request) {
     });
   });
 }
-
-// type ProjectType = {
-//   displayName: string;
-//   id: string;
-// };
-
-// type SanityProjectType = {
-//   id: string;
-//   displayName: string;
-//   studioHost: string;
-//   organizationId: string;
-//   metadata: string;
-//   isBlocked: boolean;
-//   isDisabled: boolean;
-//   isDisabledByUser: boolean;
-//   activityFeedEnabled: boolean;
-//   createdAt: string;
-//   members: {
-//     id: "pvMhfUcsU";
-//     createdAt: string;
-//     updatedAt: string;
-//     isCurrentUser: boolean;
-//     isRobot: boolean;
-//     roles: {
-//       name: "administrator" | string;
-//       title: string;
-//       description: string;
-//     }[];
-//   }[];
-//   features: [];
-// };
-
-// export async function POST(_req: Request) {
-//   const res = await _req.json();
-//   console.log(res.userid);
-
-//   const allProjects: SanityProjectType[] = await fetch(
-//     `https://api.sanity.io/v2021-06-07/projects`,
-//     {
-//       headers: { Authorization: `Bearer ${process.env.SANITY_AUTH_TOKEN}` },
-//     },
-//   ).then((res) => res.json());
-
-//   console.log(
-//     allProjects.filter((x) => x.displayName === "Rocket SaaS SGW")[0].members,
-//   ); //map((x) => x.displayName));
-
-//   const userProjects = allProjects.filter((project) => {
-//     return project.members.some((member: any) => {
-//       return member.id === res.userid;
-//     });
-//   });
-
-//   return NextResponse.json({
-//     projects: userProjects,
-//     ok: 1,
-//   });
-// }

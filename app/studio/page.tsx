@@ -6,7 +6,7 @@ import config from "../../sanity.config";
 
 export default function StudioPage() {
   return (
-    <>
+    <div className="max-h-[calc(100vh-72px)]">
       <Head>
         <title>Studio</title>
         {Object.entries(metadata).map(([key, value]) => (
@@ -14,6 +14,6 @@ export default function StudioPage() {
         ))}
       </Head>
       <NextStudio config={config} />
-    </>
+    </div>
   );
 }

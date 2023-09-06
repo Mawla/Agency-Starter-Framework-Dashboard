@@ -4,7 +4,6 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import notFound from "../not-found";
 
-import { usePathname } from "next/navigation";
 import ProjectNav from "@/components/nav/ProjectNav";
 
 async function getProject(project: string) {

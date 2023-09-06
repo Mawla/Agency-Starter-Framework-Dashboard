@@ -3568,6 +3568,11 @@ groq@^3.0.0, groq@^3.14.5:
   resolved "https://registry.npmjs.org/groq/-/groq-3.16.4.tgz"
   integrity sha512-PexitOJcyUYLqGwim9VFyzhmCSLIMjN1e6Yfq8ZjO3U67VCIeTs0UI2XWHhjX4Lkx2O2gXeGZ2x1u/MRJhB3cQ==
 
+groq@^3.16.4:
+  version "3.16.4"
+  resolved "https://registry.yarnpkg.com/groq/-/groq-3.16.4.tgz#4e3b27adb9020d32e96c9583ebaa01e029732c78"
+  integrity sha512-PexitOJcyUYLqGwim9VFyzhmCSLIMjN1e6Yfq8ZjO3U67VCIeTs0UI2XWHhjX4Lkx2O2gXeGZ2x1u/MRJhB3cQ==
+
 gunzip-maybe@^1.4.1:
   version "1.4.2"
   resolved "https://registry.npmjs.org/gunzip-maybe/-/gunzip-maybe-1.4.2.tgz"

@@ -1,7 +1,13 @@
+/**
+ * https://clerk.com/docs/integrations/webhooks
+ * https://clerk.com/docs/users/sync-data?utm_source=www.google.com&utm_medium=referral&utm_campaign=none
+ * https://dashboard.clerk.com/apps/app_2V0pJJS0KIuU6RUnBSRWWgOhvcj/instances/ins_2V0pJJtYWpm1mCZm7nNNMWTMt4i/webhooks
+ */
+
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { serverClient } from "@/lib/sanity.server";
+import { sanityServerClient } from "@/lib/sanity.server";
 
 const webhookSecret: string = process.env.CLERK_WEBHOOK_SECRET || "";
 
@@ -40,7 +46,7 @@ export async function POST(req: Request) {
   // Handle the webhook
   const eventType = evt.type;
   if (eventType === "user.created") {
-    await serverClient.create({
+    await sanityServerClient.create({
       _type: "user",
       clerk: {
         id,
