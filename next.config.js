@@ -4,7 +4,7 @@ const nextConfig = {
   experimental: {
     serverActions: true,
     outputFileTracingIncludes: {
-      "/api/projects": ["./cli/tenant.sh"],
+      "/api/projects": ["./cli/**/*"],
     },
   },
   rewrites: async () => [
