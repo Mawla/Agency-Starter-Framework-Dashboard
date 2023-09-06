@@ -30,6 +30,8 @@ colorPrint "Okay, slugified naming for Vercel"
 projectName=$(echo "$projectName" | toSlug $projectName)
 echo $projectName
 
+exit 0
+
 mkdir -p "tmp/$folderName"
 cd "./tmp"
 git clone "$gitURL" "$folderName"
