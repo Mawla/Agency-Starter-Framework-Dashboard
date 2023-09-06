@@ -17,7 +17,7 @@ export default function ProjectNav({
         const isActive = pathname === href;
 
         return (
-          <Button variant={isActive ? "default" : "outline"}>
+          <Button variant={isActive ? "default" : "outline"} key={href}>
             <Link href={href} className="flex gap-1 items-center">
               {label}
             </Link>
