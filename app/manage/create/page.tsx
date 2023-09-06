@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { currentUser } from "@clerk/nextjs";
+import type { User } from "@clerk/nextjs/api";
 
 export default async function Page() {
   async function create(formData: FormData) {
@@ -30,8 +32,11 @@ export default async function Page() {
     redirect(`/manage/${name}`);
   }
 
+  const user: User | null = await currentUser();
+
   return (
     <div>
+      {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
       <div className="border-b pb-4 mb-4">
         ‹ <Link href="/manage">back to manage</Link>
       </div>
