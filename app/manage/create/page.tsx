@@ -10,11 +10,18 @@ export default async function Page() {
       throw new Error("Invalid name");
     }
 
-    const res = await fetch(`${process.env.API_URL}/api/projects/`, {
-      cache: "no-store",
-      method: "POST",
-      body: JSON.stringify({ name }),
-    });
+    const res = await fetch(
+      `${
+        process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : "http://localhost:3000"
+      }/api/projects/`,
+      {
+        cache: "no-store",
+        method: "POST",
+        body: JSON.stringify({ name }),
+      },
+    );
 
     if (!res.ok) {
       throw new Error("Failed to create project");
