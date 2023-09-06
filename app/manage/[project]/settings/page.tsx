@@ -33,5 +33,14 @@ export default async function Page({
     notFound();
   }
 
-  return <div className="py-10 border-t">manage settings here</div>;
+  return (
+    <div className="py-10 border-t">
+      manage settings here
+      <ul>
+        <li>domains</li>
+        <li>deployments</li>
+        <li>redeploy</li>
+      </ul>
+    </div>
+  );
 }
