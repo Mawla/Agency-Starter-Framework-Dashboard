@@ -1,4 +1,5 @@
 import { sanityServerClient } from "@/lib/sanity.server";
+import { slugify } from "@/lib/utils";
 import { auth } from "@clerk/nextjs";
 import { groq } from "next-sanity";
 import { NextResponse } from "next/server";
@@ -20,17 +21,22 @@ export async function POST(_req: Request) {
   const { _id: projectId } = await sanityServerClient.create({
     _type: "project",
     title: projectName,
+    slug: {
+      current: slugify(projectName),
+    },
     log: ["Created project from API"],
   });
 
   /* Mirror logs to sanity */
   async function log(msg: string) {
-    if (!msg.trim().length) return;
-    msg = msg.replace("[0;36m", "").replace("[0m", "");
+    if (!msg) return;
+    let str = msg.toString();
+    if (!str.trim().length) return;
+    str = str.replace("[0;36m", "").replace("[0m", "");
 
     sanityServerClient
       .patch(projectId)
-      .insert("after", "log[-1]", [msg])
+      .insert("after", "log[-1]", [str])
       .commit();
   }
 
