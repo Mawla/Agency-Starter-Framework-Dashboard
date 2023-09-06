@@ -58,7 +58,7 @@ export async function POST(_req: Request) {
   log(`Added project to user ${sanityUserId}`);
 
   const child = exec(
-    `sh ./cli/tenant.sh "${projectName}" ${userId}`,
+    `sh ${__dirname}/../cli/tenant.sh "${projectName}" ${userId}`,
     (error: any, stdout: any, stderr: any) => {
       log(stdout);
       log(stderr);
