@@ -40,7 +40,9 @@ export default async function Page({ params }: { params: { userid: string } }) {
       <div className="col-span-1 p-10">
         <ul className="divide-y divide-y-gray-100">
           <li className="p-2">
-            <Link href="/manage">Websites</Link>
+            <Link href="/projects" className="font-semibold text-blue-600">
+              Websites
+            </Link>
           </li>
           <li className="p-2">
             <Link href="/account">Account</Link>
@@ -65,7 +67,7 @@ export default async function Page({ params }: { params: { userid: string } }) {
             </CardHeader>
             <CardContent>
               <Button asChild>
-                <Link href="/manage/create">Create new</Link>
+                <Link href="/projects/create">Create new</Link>
               </Button>
             </CardContent>
           </Card>
@@ -81,7 +83,7 @@ export default async function Page({ params }: { params: { userid: string } }) {
                     <CardHeader>
                       <CardTitle>
                         <Link
-                          href={`/manage/${project.slug}`}
+                          href={`/projects/${project.slug}`}
                           className="hover:underline"
                         >
                           {project.title}
@@ -91,7 +93,7 @@ export default async function Page({ params }: { params: { userid: string } }) {
                     <CardContent>
                       <div className="flex gap-2">
                         <Button asChild variant="default">
-                          <Link href={`/manage/${project.title}`}>Manage</Link>
+                          <Link href={`/projects/${project.slug}`}>Manage</Link>
                         </Button>
                         {project.url && (
                           <Button asChild variant="outline">

@@ -1,4 +1,5 @@
-import CreateForm from "@/components/forms/CreateForm";
+import CreateForm from "@/components/create/CreateForm";
+import CreateLog from "@/components/create/CreateLog";
 
 export default async function Page() {
   return (
@@ -8,7 +9,7 @@ export default async function Page() {
       </div>
 
       <div className="border h-full col-span-3 p-4 font-mono text-sm bg-gray-100">
-        …deploy log here?
+        <CreateLog />
       </div>
     </div>
   );

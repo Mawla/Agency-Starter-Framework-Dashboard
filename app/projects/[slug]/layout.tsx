@@ -5,77 +5,55 @@ import Link from "next/link";
 import notFound from "../not-found";
 
 import ProjectNav from "@/components/nav/ProjectNav";
-
-async function getProject(project: string) {
-  const projectRes = await fetch(
-    `https://api.vercel.com/v9/projects/${project}?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
-      },
-      method: "get",
-    },
-  );
-
-  const projectData = await projectRes.json();
-
-  if (projectData.error) {
-    return null;
-  }
-
-  return projectData;
-}
+import { getProjectStatus, getProjectURL } from "@/lib/queries/get-project";
 
 export default async function Layout({
   children,
   params,
-  ...rest
 }: {
   children: React.ReactNode;
-  params: { project: string };
+  params: { slug: string };
   req: any;
 }) {
-  const project = params.project;
+  const slug = params.slug;
 
-  const projectData = await getProject(project);
-
-  if (!projectData) {
+  if (!slug) {
     notFound();
   }
 
-  const state = projectData.targets.production.readyState;
-  const url = projectData.targets.production.alias[0];
+  const url = await getProjectURL(slug);
+  const state = await getProjectStatus(slug);
 
   const navLinks = [
     {
       label: "Overview",
-      href: `/manage/${project}`,
+      href: `/projects/${slug}`,
     },
     {
       label: "CMS",
-      href: `/manage/${project}/cms`,
+      href: `/projects/${slug}/cms`,
     },
     {
       label: "Users",
-      href: `/manage/${project}/users`,
+      href: `/projects/${slug}/users`,
     },
     {
       label: "Settings",
-      href: `/manage/${project}/settings`,
+      href: `/projects/${slug}/settings`,
     },
   ];
 
   return (
     <div className="px-10 pt-10">
       <div className="pb-4 flex gap-10 items-center">
-        <Button variant="outline">
-          <Link href="/manage" className="flex gap-1 items-center">
-            <ArrowLeft size={16} strokeWidth={1.5} /> back
-          </Link>
-        </Button>
+        <div className="flex shrink-0 items-center">
+          <Button variant="ghost">
+            <Link href="/projects" className="flex gap-1 items-center">
+              <ArrowLeft size={16} strokeWidth={1.5} /> back
+            </Link>
+          </Button>
 
-        <div className="">
-          <h1 className="uppercase font-semibold text-sm">{project}</h1>
+          <h1 className="uppercase font-semibold text-md">{slug}</h1>
         </div>
 
         <div className="">

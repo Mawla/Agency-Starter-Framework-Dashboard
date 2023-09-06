@@ -22,7 +22,7 @@ export default function RootLayout({
           <div className="bg-slate-900 p-3 min-h-screen text-white">
             <div className="pb-3 flex items-center">
               <div className="w-[200px] shrink-0">
-                <Link href="/manage">
+                <Link href="/projects">
                   <Logo />
                 </Link>
               </div>

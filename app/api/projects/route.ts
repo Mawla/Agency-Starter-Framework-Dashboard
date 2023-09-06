@@ -10,17 +10,6 @@ export async function POST(_req: Request) {
   const res = await _req.json();
   const projectName = res.projectName;
 
-  /* Mirror logs to sanity */
-  async function log(msg: string) {
-    if (!msg.trim().length) return;
-    msg = msg.replace("[0;36m", "").replace("[0m", "");
-
-    sanityServerClient
-      .patch(projectId)
-      .insert("after", "log[-1]", [msg])
-      .commit();
-  }
-
   if (!projectName) {
     return NextResponse.json({
       ok: 0,
@@ -33,6 +22,17 @@ export async function POST(_req: Request) {
     title: projectName,
     log: ["Created project from API"],
   });
+
+  /* Mirror logs to sanity */
+  async function log(msg: string) {
+    if (!msg.trim().length) return;
+    msg = msg.replace("[0;36m", "").replace("[0m", "");
+
+    sanityServerClient
+      .patch(projectId)
+      .insert("after", "log[-1]", [msg])
+      .commit();
+  }
 
   // get sanity user id
   const sanityUserId = await sanityServerClient.fetch(

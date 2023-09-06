@@ -9,5 +9,5 @@ export default async function Page() {
     return redirect("/sign-up");
   }
 
-  return redirect("/manage");
+  return redirect("/projects");
 }

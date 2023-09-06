@@ -49,7 +49,7 @@ export default function CreateForm() {
         }
 
         setState("stale");
-        router.push(`/manage/${projectName}`);
+        router.push(`/projects/${projectName}`);
       }
 
       createProject();
@@ -82,7 +82,7 @@ export default function CreateForm() {
         <CardFooter className="flex justify-between">
           {state === "stale" && (
             <Button variant="outline" asChild>
-              <Link href="/manage">Cancel</Link>
+              <Link href="/projects">Cancel</Link>
             </Button>
           )}
 
