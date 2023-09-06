@@ -18,14 +18,14 @@ export async function POST(_req: Request) {
   }
 
   // create new project
-  // const { _id: projectId } = await sanityServerClient.create({
-  //   _type: "project",
-  //   title: projectName,
-  //   slug: {
-  //     current: slugify(projectName),
-  //   },
-  //   log: ["Created project from API"],
-  // });
+  const { _id: projectId } = await sanityServerClient.create({
+    _type: "project",
+    title: projectName,
+    slug: {
+      current: slugify(projectName),
+    },
+    log: ["Created project from API"],
+  });
 
   /* Mirror logs to sanity */
   async function log(msg: string) {
@@ -36,33 +36,30 @@ export async function POST(_req: Request) {
 
     console.log(str);
 
-    // sanityServerClient
-    //   .patch(projectId)
-    //   .insert("after", "log[-1]", [str])
-    //   .commit();
+    sanityServerClient
+      .patch(projectId)
+      .insert("after", "log[-1]", [str])
+      .commit();
   }
 
   // get sanity user id
-  // const sanityUserId = await sanityServerClient.fetch(
-  //   groq`*[_type == 'user' && clerk.id == $userId][0]._id`,
-  //   { userId },
-  // );
+  const sanityUserId = await sanityServerClient.fetch(
+    groq`*[_type == 'user' && clerk.id == $userId][0]._id`,
+    { userId },
+  );
 
   // add project to user
-  // sanityServerClient
-  //   .patch(sanityUserId)
-  //   .setIfMissing({ projects: [] })
-  //   .insert("after", "projects[-1]", [
-  //     { _type: "reference", _ref: projectId, _weak: true },
-  //   ])
-  //   .commit({
-  //     autoGenerateArrayKeys: true,
-  //   });
+  sanityServerClient
+    .patch(sanityUserId)
+    .setIfMissing({ projects: [] })
+    .insert("after", "projects[-1]", [
+      { _type: "reference", _ref: projectId, _weak: true },
+    ])
+    .commit({
+      autoGenerateArrayKeys: true,
+    });
 
-  // log(`Added project to user ${sanityUserId}`);
-
-  console.log(__dirname);
-  console.log(process.cwd());
+  log(`Added project to user ${sanityUserId}`);
 
   const child = exec(
     `sh ${process.cwd()}/cli/tenant.sh "${projectName}" ${userId}`,
