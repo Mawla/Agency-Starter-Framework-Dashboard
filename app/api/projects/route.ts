@@ -62,7 +62,7 @@ export async function POST(_req: Request) {
   log(`Added project to user ${sanityUserId}`);
 
   const child = exec(
-    `sh ${process.cwd()}/cli/tenant.sh "${projectName}" ${userId}`,
+    `sh ./cli/tenant.sh "${projectName}" ${userId}`,
     (error: any, stdout: any, stderr: any) => {
       log(stdout);
       log(stderr);
