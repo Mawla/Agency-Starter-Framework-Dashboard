@@ -30,11 +30,14 @@ export default function CreateForm() {
       async function createProject() {
         setState("submitting");
 
-        const res = await fetch(`${process.env.VERCEL_URL}/api/projects/`, {
-          cache: "no-store",
-          method: "POST",
-          body: JSON.stringify({ projectName }),
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/projects/`,
+          {
+            cache: "no-store",
+            method: "POST",
+            body: JSON.stringify({ projectName }),
+          },
+        );
 
         if (!res.ok) {
           setState("error");
