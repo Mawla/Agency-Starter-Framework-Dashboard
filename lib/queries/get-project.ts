@@ -2,6 +2,7 @@
 
 import groq from "groq";
 import { sanityServerClient } from "../sanity.server";
+import { sFetch, vFetch } from "./fetch";
 
 /**
  * Get all project data across platforms
@@ -96,17 +97,12 @@ export async function getProjectStatus(slug: string) {
  */
 
 export async function getVercelProject(vercelId: string) {
-  const res = await fetch(
-    `https://api.vercel.com/v9/projects/${vercelId}?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
-      },
-      method: "get",
-    },
+  const data = await vFetch(
+    `https://api.vercel.com/v9/projects/${vercelId}`,
+    undefined,
+    "GET",
   );
 
-  const data = await res.json();
   if (data.error) return data;
   return data;
 }
@@ -116,17 +112,28 @@ export async function getVercelProject(vercelId: string) {
  */
 
 export async function getSanityProject(sanityId: string) {
-  const res = await fetch(
+  const data = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${sanityId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.SANITY_AUTH_TOKEN}`,
-      },
-      method: "get",
-    },
+    undefined,
+    "GET",
   );
 
-  const data = await res.json();
   if (data.error) return null;
   return data;
+}
+
+/**
+ * Get deploy hook from sanity
+ */
+
+export async function getDeployHook(slug: string) {
+  const hook = await sanityServerClient.fetch(
+    groq`*[_type == 'project' && slug.current == $slug][0]{
+      "hook": vercel.deploy_hook
+    }.hook`,
+    { slug },
+  );
+
+  if (!hook) return null;
+  return hook;
 }

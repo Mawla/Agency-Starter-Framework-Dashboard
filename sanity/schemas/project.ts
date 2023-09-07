@@ -27,6 +27,10 @@ export default defineType({
           name: "id",
           type: "string",
         }),
+        defineField({
+          name: "deploy_hook",
+          type: "string",
+        }),
       ],
     }),
     defineField({

@@ -190,7 +190,6 @@ export async function POST(_req: Request, res: NextApiResponse) {
   /**
    * Create Vercel project
    */
-
   const environmentVariables = [
     { key: "SANITY_API_WRITE_TOKEN", value: SANITY_API_WRITE_TOKEN },
     { key: "SANITY_API_READ_TOKEN", value: SANITY_API_READ_TOKEN },
@@ -205,26 +204,24 @@ export async function POST(_req: Request, res: NextApiResponse) {
 
   console.log("Creating Vercel project");
 
-  const vercelResult = await vFetch(
-    `https://api.vercel.com/v9/projects?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
-    {
-      name: projectName,
-      commandForIgnoringBuildStep:
-        'if [ "$VERCEL_ENV" == "production" ]; then exit 1; else exit 0; fi',
-      environmentVariables: environmentVariables.map(({ key, value }) => ({
-        key,
-        value,
-        target: "production",
-        type: "encrypted",
-      })),
-      framework: "nextjs",
-      gitRepository: {
-        repo: `${process.env.ADMIN_GITHUB_REPO}`,
-        type: "github",
-      },
-      serverlessFunctionRegion: "dub1",
+  const vercelResult = await vFetch(`https://api.vercel.com/v9/projects`, {
+    name: projectName,
+    commandForIgnoringBuildStep:
+      'if [ "$VERCEL_ENV" == "production" ]; then exit 1; else exit 0; fi',
+    environmentVariables: environmentVariables.map(({ key, value }) => ({
+      key,
+      value,
+      target: "production",
+      type: "encrypted",
+    })),
+    framework: "nextjs",
+    gitRepository: {
+      repo: `${process.env.ADMIN_GITHUB_REPO}`,
+      type: "github",
     },
-  );
+    serverlessFunctionRegion: "dub1",
+  });
+
   const VERCEL_PROJECT_ID = vercelResult.id;
 
   console.log(vercelResult);
@@ -238,30 +235,34 @@ export async function POST(_req: Request, res: NextApiResponse) {
    * Deploy Vercel
    */
 
-  console.log("Deploying Vercel project");
+  console.log("Creating Vercel deploy hook");
 
-  const deployment = await vFetch(
-    `https://api.vercel.com/v13/deployments?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
-    {
-      gitSource: {
-        ref: "main",
-        repo: process.env.ADMIN_GITHUB_REPO?.split("/")[1],
-        repoId: process.env.ADMIN_GITHUB_REPO_ID,
-        org: process.env.ADMIN_GITHUB_REPO?.split("/")[0],
-        type: "github",
-      },
-      name: projectName,
-      projectSettings: {
-        buildCommand: null,
-        devCommand: null,
-        framework: "nextjs",
-        commandForIgnoringBuildStep: "",
-        installCommand: null,
-        outputDirectory: null,
-      },
-    },
+  await vFetch(
+    `https://vercel.com/api/v2/projects/${VERCEL_PROJECT_ID}/deploy-hooks`,
+    { name: "redeploy", ref: "main" },
   );
-  console.log(deployment);
+
+  console.log("Fetching Vercel project data");
+
+  const vercelProject = await vFetch(
+    `https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}`,
+    undefined,
+    "GET",
+  );
+
+  console.log("Updating Sanity project with Vercel deploy hook");
+
+  const VERCEL_REDEPLOY_HOOK = vercelProject.link.deployHooks[0].url;
+  sanityServerClient
+    .patch(projectId)
+    .set({ "vercel.deploy_hook": VERCEL_REDEPLOY_HOOK })
+    .commit();
+
+  console.log("Deploying Vercel project with hook");
+
+  await fetch(VERCEL_REDEPLOY_HOOK);
+
+  console.log("Done");
 
   return NextResponse.json({
     ok: 1,

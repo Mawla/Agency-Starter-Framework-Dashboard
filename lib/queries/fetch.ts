@@ -21,17 +21,20 @@ export async function sFetch(url: string, body?: any, method = "POST") {
  * Vercel fetch
  */
 
-export async function vFetch(url: string, body?: any) {
+export async function vFetch(url: string, body?: any, method = "POST") {
   const params: any = {
     headers: {
       Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
       "Content-Type": "application/json",
     },
-    method: "POST",
+    method,
   };
   if (body) params.body = JSON.stringify(body);
 
-  const res = await fetch(url, params);
+  const res = await fetch(
+    `${url}?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
+    params,
+  );
   const obj = await res.json();
   return obj;
 }

@@ -33,7 +33,7 @@ export default function CreateForm() {
         setState("submitting");
 
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/project/`,
+          `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/create-project/`,
           {
             cache: "no-store",
             method: "POST",
