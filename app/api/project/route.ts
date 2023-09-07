@@ -4,6 +4,12 @@ import { auth } from "@clerk/nextjs";
 import { groq } from "next-sanity";
 import { NextResponse } from "next/server";
 
+/**
+ * Useful links
+ * - https://www.sanity.io/docs/http-mutations#0355c7dc93d2
+ * - https://vercel.com/docs/rest-api/endpoints#projects
+ */
+
 export async function POST(_req: Request) {
   const { userId }: { userId: string | null } = auth();
   const res = await _req.json();
@@ -65,8 +71,9 @@ export async function POST(_req: Request) {
   /**
    * Create Sanity project
    */
+  console.log("Creating Sanity project");
 
-  obj = await sanityFetch(
+  obj = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects`,
 
     {
@@ -84,9 +91,10 @@ export async function POST(_req: Request) {
   /**
    * Create Sanity dataset
    */
+  console.log("Creating Sanity dataset");
 
   const SANITY_DATASET = "production";
-  obj = await sanityFetch(
+  obj = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/datasets/${SANITY_DATASET}`,
     undefined,
     "PUT",
@@ -95,6 +103,7 @@ export async function POST(_req: Request) {
   /**
    * Create random tokens
    */
+  console.log("Creating random tokens");
 
   q = await fetch(`https://random-word-api.herokuapp.com/word?number=4`, {
     headers: { "Content-Type": "application/json" },
@@ -111,8 +120,9 @@ export async function POST(_req: Request) {
   /**
    * Create Sanity WRITE token
    */
+  console.log("Creating Sanity WRITE token");
 
-  obj = await sanityFetch(
+  obj = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/tokens`,
 
     { label: "preview-write", roleName: "editor" },
@@ -123,7 +133,9 @@ export async function POST(_req: Request) {
    * Create Sanity READ token
    */
 
-  obj = await sanityFetch(
+  console.log("Creating Sanity READ token");
+
+  obj = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/tokens`,
 
     { label: "preview-read", roleName: "viewer" },
@@ -134,7 +146,9 @@ export async function POST(_req: Request) {
    * Create Sanity CORS origins
    */
 
-  await sanityFetch(
+  console.log("Creating CORS origins");
+
+  await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/cors`,
 
     {
@@ -143,7 +157,7 @@ export async function POST(_req: Request) {
     },
   );
 
-  await sanityFetch(
+  await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/cors`,
 
     {
@@ -152,9 +166,8 @@ export async function POST(_req: Request) {
     },
   );
 
-  await sanityFetch(
+  await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/cors`,
-
     {
       origin: `https://${projectName}.vercel.app`,
       allowCredentials: true,
@@ -168,19 +181,110 @@ export async function POST(_req: Request) {
   console.log(SANITY_API_WRITE_TOKEN);
   console.log(SANITY_API_READ_TOKEN);
 
+  /**
+   * Create Vercel project
+   */
+
+  const environmentVariables = [
+    { key: "SANITY_API_WRITE_TOKEN", value: SANITY_API_WRITE_TOKEN },
+    { key: "SANITY_API_READ_TOKEN", value: SANITY_API_READ_TOKEN },
+    { key: "SANITY_WEBHOOK_SECRET", value: SANITY_WEBHOOK_SECRET },
+    { key: "SANITY_PREVIEW_SECRET", value: SANITY_PREVIEW_SECRET },
+    { key: "SANITY_STUDIO_PROJECT_PATH", value: "/" },
+    { key: "SANITY_STUDIO_API_DATASET", value: SANITY_DATASET },
+    { key: "NEXT_PUBLIC_SANITY_DATASET", value: SANITY_DATASET },
+    { key: "SANITY_STUDIO_API_PROJECT_ID", value: SANITY_PROJECT_ID },
+    { key: "NEXT_PUBLIC_SANITY_PROJECT_ID", value: SANITY_PROJECT_ID },
+  ];
+
+  console.log("Creating Vercel project");
+
+  const vercelResult = await vFetch(
+    `https://api.vercel.com/v9/projects?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
+    {
+      name: projectName,
+      commandForIgnoringBuildStep:
+        'if [ "$VERCEL_ENV" == "production" ]; then exit 1; else exit 0; fi',
+      environmentVariables: environmentVariables.map(({ key, value }) => ({
+        key,
+        value,
+        target: "production",
+        type: "encrypted",
+      })),
+      framework: "nextjs",
+      gitRepository: {
+        repo: `${process.env.ADMIN_GITHUB_REPO}`,
+        type: "github",
+      },
+      serverlessFunctionRegion: "dub1",
+    },
+  );
+  const VERCEL_PROJECT_ID = vercelResult.id;
+
+  console.log(vercelResult);
+
+  sanityServerClient
+    .patch(projectId)
+    .set({ "vercel.id": VERCEL_PROJECT_ID })
+    .commit();
+
+  /**
+   * Deploy Vercel
+   */
+
+  console.log("Deploying Vercel project");
+
+  const deployment = await vFetch(
+    `https://api.vercel.com/v13/deployments?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
+    {
+      branch: {
+        id: "production",
+        project_id: `${VERCEL_PROJECT_ID}`,
+        name: "init",
+        current_state: "init",
+        primary: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      name: "SGW init",
+    },
+  );
+  console.log(deployment);
+
   return NextResponse.json({
     ok: 1,
   });
 }
 
-async function sanityFetch(url: string, body: any, method = "POST") {
-  console.log(url, body);
+/**
+ * Sanity fetch
+ */
+
+async function sFetch(url: string, body?: any, method = "POST") {
   const params: any = {
     headers: {
       Authorization: `Bearer ${process.env.ADMIN_SANITY_TOKEN}`,
       "Content-Type": "application/json",
     },
     method,
+  };
+  if (body) params.body = JSON.stringify(body);
+
+  const res = await fetch(url, params);
+  const obj = await res.json();
+  return obj;
+}
+
+/**
+ * Vercel fetch
+ */
+async function vFetch(url: string, body?: any) {
+  const params: any = {
+    headers: {
+      Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    method: "POST",
   };
   if (body) params.body = JSON.stringify(body);
 
