@@ -1,4 +1,3 @@
-import DeployButton from "@/components/project/DeployButton";
 import DeployStatus from "@/components/project/DeployStatus";
 
 import { getProject } from "@/lib/queries/get-project";
@@ -13,8 +12,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const project = params.slug;
 
   const projectData = await getData(project);
-
-  console.log(projectData);
 
   if (!projectData) {
     notFound();
