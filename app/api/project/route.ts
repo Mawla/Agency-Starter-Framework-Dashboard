@@ -1,6 +1,8 @@
+import { sFetch, vFetch } from "@/lib/queries/fetch";
 import { sanityServerClient } from "@/lib/sanity.server";
 import { slugify } from "@/lib/utils";
 import { auth } from "@clerk/nextjs";
+import { NextApiResponse } from "next";
 import { groq } from "next-sanity";
 import { NextResponse } from "next/server";
 
@@ -10,10 +12,14 @@ import { NextResponse } from "next/server";
  * - https://vercel.com/docs/rest-api/endpoints#projects
  */
 
-export async function POST(_req: Request) {
+export async function POST(_req: Request, res: NextApiResponse) {
   const { userId }: { userId: string | null } = auth();
-  const res = await _req.json();
-  const projectName = slugify(res.projectName);
+  if (!userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  const params = await _req.json();
+  const projectName = slugify(params.projectName);
 
   if (!projectName) {
     return NextResponse.json({
@@ -260,41 +266,4 @@ export async function POST(_req: Request) {
   return NextResponse.json({
     ok: 1,
   });
-}
-
-/**
- * Sanity fetch
- */
-
-async function sFetch(url: string, body?: any, method = "POST") {
-  const params: any = {
-    headers: {
-      Authorization: `Bearer ${process.env.ADMIN_SANITY_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    method,
-  };
-  if (body) params.body = JSON.stringify(body);
-
-  const res = await fetch(url, params);
-  const obj = await res.json();
-  return obj;
-}
-
-/**
- * Vercel fetch
- */
-async function vFetch(url: string, body?: any) {
-  const params: any = {
-    headers: {
-      Authorization: `Bearer ${process.env.ADMIN_VERCEL_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-  };
-  if (body) params.body = JSON.stringify(body);
-
-  const res = await fetch(url, params);
-  const obj = await res.json();
-  return obj;
 }

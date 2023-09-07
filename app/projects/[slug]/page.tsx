@@ -1,3 +1,5 @@
+import DeployButton from "@/components/project/DeployButton";
+
 import { getProject } from "@/lib/queries/get-project";
 import { notFound } from "next/navigation";
 
@@ -17,6 +19,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   return (
     <div className="py-10 border-t">
+      <DeployButton project={project} />
+      <hr />
       project overview here
       <pre>
         {JSON.stringify(projectData.vercel.targets.production.alias, null, 2)}
