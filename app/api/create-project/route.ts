@@ -77,7 +77,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   /**
    * Create Sanity project
    */
-  console.log("Creating Sanity project");
+  log("Creating Sanity project");
 
   obj = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects`,
@@ -97,7 +97,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   /**
    * Create Sanity dataset
    */
-  console.log("Creating Sanity dataset");
+  log("Creating Sanity dataset");
 
   const SANITY_DATASET = "production";
   obj = await sFetch(
@@ -109,7 +109,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   /**
    * Create random tokens
    */
-  console.log("Creating random tokens");
+  log("Creating random tokens");
 
   q = await fetch(`https://random-word-api.herokuapp.com/word?number=4`, {
     headers: { "Content-Type": "application/json" },
@@ -126,7 +126,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   /**
    * Create Sanity WRITE token
    */
-  console.log("Creating Sanity WRITE token");
+  log("Creating Sanity WRITE token");
 
   obj = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/tokens`,
@@ -139,7 +139,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
    * Create Sanity READ token
    */
 
-  console.log("Creating Sanity READ token");
+  log("Creating Sanity READ token");
 
   obj = await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/tokens`,
@@ -152,7 +152,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
    * Create Sanity CORS origins
    */
 
-  console.log("Creating CORS origins");
+  log("Creating CORS origins");
 
   await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/cors`,
@@ -180,13 +180,6 @@ export async function POST(_req: Request, res: NextApiResponse) {
     },
   );
 
-  console.log(SANITY_PROJECT_ID);
-  console.log(SANITY_DATASET);
-  console.log(SANITY_PREVIEW_SECRET);
-  console.log(SANITY_WEBHOOK_SECRET);
-  console.log(SANITY_API_WRITE_TOKEN);
-  console.log(SANITY_API_READ_TOKEN);
-
   /**
    * Create Vercel project
    */
@@ -202,7 +195,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
     { key: "NEXT_PUBLIC_SANITY_PROJECT_ID", value: SANITY_PROJECT_ID },
   ];
 
-  console.log("Creating Vercel project");
+  log("Creating Vercel project");
 
   const vercelResult = await vFetch(`https://api.vercel.com/v9/projects`, {
     name: projectName,
@@ -224,7 +217,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
 
   const VERCEL_PROJECT_ID = vercelResult.id;
 
-  console.log(vercelResult);
+  log(vercelResult);
 
   sanityServerClient
     .patch(projectId)
@@ -235,14 +228,14 @@ export async function POST(_req: Request, res: NextApiResponse) {
    * Deploy Vercel
    */
 
-  console.log("Creating Vercel deploy hook");
+  log("Creating Vercel deploy hook");
 
   await vFetch(
     `https://vercel.com/api/v2/projects/${VERCEL_PROJECT_ID}/deploy-hooks`,
     { name: "redeploy", ref: "main" },
   );
 
-  console.log("Fetching Vercel project data");
+  log("Fetching Vercel project data");
 
   const vercelProject = await vFetch(
     `https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}`,
@@ -250,7 +243,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
     "GET",
   );
 
-  console.log("Updating Sanity project with Vercel deploy hook");
+  log("Updating Sanity project with Vercel deploy hook");
 
   const VERCEL_REDEPLOY_HOOK = vercelProject.link.deployHooks[0].url;
   sanityServerClient
@@ -258,11 +251,11 @@ export async function POST(_req: Request, res: NextApiResponse) {
     .set({ "vercel.deploy_hook": VERCEL_REDEPLOY_HOOK })
     .commit();
 
-  console.log("Deploying Vercel project with hook");
+  log("Deploying Vercel project with hook");
 
   await fetch(VERCEL_REDEPLOY_HOOK);
 
-  console.log("Done");
+  log("Done");
 
   return NextResponse.json({
     ok: 1,

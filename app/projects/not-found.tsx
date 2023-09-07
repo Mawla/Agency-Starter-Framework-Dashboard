@@ -1,3 +1,3 @@
 export default async function NotFound() {
-  return <div>not found</div>;
+  return <div className="p-10">not found</div>;
 }

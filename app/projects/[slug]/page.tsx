@@ -13,7 +13,14 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   const projectData = await getData(project);
 
-  if (!projectData) {
+  console.log(projectData);
+
+  if (
+    !projectData ||
+    !projectData.vercel ||
+    projectData.vercel.error ||
+    !projectData.sanity
+  ) {
     notFound();
   }
 

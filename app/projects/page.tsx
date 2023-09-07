@@ -32,8 +32,8 @@ async function getProjects() {
 
 export default async function Page({ params }: { params: { userid: string } }) {
   let projects = await getProjects();
-  projects = projects.filter(Boolean);
-  const hasProjects = projects.length > 0;
+  projects = projects?.filter(Boolean);
+  const hasProjects = projects?.length > 0;
 
   return (
     <div className="grid grid-cols-6">
