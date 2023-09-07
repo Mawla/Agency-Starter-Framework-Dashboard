@@ -237,16 +237,22 @@ export async function POST(_req: Request) {
   const deployment = await vFetch(
     `https://api.vercel.com/v13/deployments?teamId=${process.env.ADMIN_VERCEL_TEAM_ID}`,
     {
-      branch: {
-        id: "production",
-        project_id: `${VERCEL_PROJECT_ID}`,
-        name: "init",
-        current_state: "init",
-        primary: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+      gitSource: {
+        ref: "main",
+        repo: process.env.ADMIN_GITHUB_REPO?.split("/")[1],
+        repoId: process.env.ADMIN_GITHUB_REPO_ID,
+        org: process.env.ADMIN_GITHUB_REPO?.split("/")[0],
+        type: "github",
       },
-      name: "SGW init",
+      name: projectName,
+      projectSettings: {
+        buildCommand: null,
+        devCommand: null,
+        framework: "nextjs",
+        commandForIgnoringBuildStep: "",
+        installCommand: null,
+        outputDirectory: null,
+      },
     },
   );
   console.log(deployment);
