@@ -1,4 +1,4 @@
-export default function Spinner({ size = 24 }: { size: number }) {
+export default function Spinner({ size = 24 }: { size?: number }) {
   return (
     <svg
       width={size}
