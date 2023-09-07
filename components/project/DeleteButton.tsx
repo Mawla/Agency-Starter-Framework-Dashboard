@@ -15,6 +15,8 @@ export default function DeleteButton({ project }: { project: string }) {
     });
 
     setState("stale");
+
+    location.reload();
   }, []);
 
   return (

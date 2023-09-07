@@ -29,6 +29,9 @@ export async function POST(_req: Request, res: NextApiResponse) {
   // create new project
   const data = await getProjectIds(project);
 
+  // delete from Sanity
+  await sanityServerClient.delete(data._id);
+
   // delete sanity project
   if (data.sanityId)
     await sFetch(
@@ -44,9 +47,6 @@ export async function POST(_req: Request, res: NextApiResponse) {
       undefined,
       "DELETE",
     );
-
-  // delete from Sanity
-  await sanityServerClient.delete(data._id);
 
   return NextResponse.json({
     ok: 1,

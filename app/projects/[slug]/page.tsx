@@ -1,4 +1,5 @@
 import DeployButton from "@/components/project/DeployButton";
+import DeployStatus from "@/components/project/DeployStatus";
 
 import { getProject } from "@/lib/queries/get-project";
 import { notFound } from "next/navigation";
@@ -15,25 +16,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   console.log(projectData);
 
-  if (
-    !projectData ||
-    !projectData.vercel ||
-    projectData.vercel.error ||
-    !projectData.sanity
-  ) {
+  if (!projectData) {
     notFound();
   }
 
   return (
     <div className="py-10 border-t">
-      <DeployButton project={project} />
-      <hr />
-      project overview here
-      <pre>
-        {JSON.stringify(projectData.vercel.targets.production.alias, null, 2)}
-      </pre>
-      {/* <p>Everything we know about this project from Vercel and Sanity:</p> */}
-      {/* <pre>{JSON.stringify(projectData, null, 2)}</pre> */}
+      <div className="flex gap-4 items-center">
+        <span>
+          <DeployStatus project={project} />
+        </span>
+      </div>
     </div>
   );
 }

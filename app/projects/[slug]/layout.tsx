@@ -2,11 +2,11 @@ import { Button } from "@/components/ui/button";
 
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import notFound from "../not-found";
 
 import ProjectNav from "@/components/nav/ProjectNav";
 import { getProjectURL } from "@/lib/queries/get-project";
 import DeployStatus from "@/components/project/DeployStatus";
+import { redirect } from "next/navigation";
 
 export default async function Layout({
   children,
@@ -19,7 +19,7 @@ export default async function Layout({
   const slug = params.slug;
 
   if (!slug) {
-    notFound();
+    redirect("/projects");
   }
 
   const url = await getProjectURL(slug);

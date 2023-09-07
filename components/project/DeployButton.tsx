@@ -20,7 +20,7 @@ export default function DeployButton({ project }: { project: string }) {
 
   return (
     <Button onClick={handleDeploy} disabled={state === "deploying"}>
-      {state === "stale" ? <>Deploy</> : <Spinner />}
+      {state === "stale" ? <>Redeploy</> : <Spinner />}
     </Button>
   );
 }

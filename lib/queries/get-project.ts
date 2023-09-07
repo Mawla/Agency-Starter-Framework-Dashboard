@@ -10,6 +10,7 @@ import { sFetch, vFetch } from "./fetch";
 
 export async function getProject(slug: string) {
   const data = await getProjectIds(slug);
+
   if (!data) return null;
   const vercelProject = await getVercelProject(data.vercelId);
   const sanityProject = await getSanityProject(data.sanityId);
