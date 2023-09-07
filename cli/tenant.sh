@@ -92,9 +92,6 @@ readJson=$(curl POST "https://api.sanity.io/v2021-06-07/projects/$sanityProjectI
 sanityReadToken=$(echo $readJson | npx --yes groq-cli '(*).key' | xargs)
 echo "SANITY_API_READ_TOKEN=$sanityReadToken" >> ".env.development.tmp"
 
-# Write sanity api tokens
-echo "" >> ".env.development.tmp"
-
 # Add CORS origins
 colorPrint "- Add localhost CORS origin to Sanity"
 sanity cors add http://localhost:3000 --credentials

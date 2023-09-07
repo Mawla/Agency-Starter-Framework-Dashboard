@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { slugify } from "@/lib/utils";
 
 export default function CreateForm() {
   const [state, setState] = useState<"stale" | "submitting" | "error">("stale");
@@ -31,7 +32,7 @@ export default function CreateForm() {
         setState("submitting");
 
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/projects/`,
+          `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/project/`,
           {
             cache: "no-store",
             method: "POST",
@@ -45,7 +46,7 @@ export default function CreateForm() {
         }
 
         setState("stale");
-        router.push(`/projects/${projectName}`);
+        router.push(`/projects/${slugify(projectName)}`);
       }
 
       createProject();
