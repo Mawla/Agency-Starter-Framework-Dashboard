@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { cx } from "class-variance-authority";
+
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import notFound from "../not-found";
 
 import ProjectNav from "@/components/nav/ProjectNav";
-import { getProjectStatus, getProjectURL } from "@/lib/queries/get-project";
+import { getProjectURL } from "@/lib/queries/get-project";
+import DeployStatus from "@/components/project/DeployStatus";
 
 export default async function Layout({
   children,
@@ -22,7 +23,6 @@ export default async function Layout({
   }
 
   const url = await getProjectURL(slug);
-  const state = await getProjectStatus(slug);
 
   const navLinks = [
     {
@@ -62,20 +62,7 @@ export default async function Layout({
 
         <div className="ml-auto flex gap-3 items-center">
           <span>
-            <span
-              className={cx("text-xs font-medium mr-2 px-2.5 py-0.5 rounded", {
-                ["bg-green-100 text-green-800"]: state === "READY",
-                ["bg-yellow-100 text-yellow-800"]: [
-                  "INITIALIZING",
-                  "BUILDING",
-                ].includes(state),
-                ["bg-red-100 text-red-800"]: state === "ERROR",
-                ["bg-gray-100 text-gray-800"]: state === "QUEUED",
-                ["bg-orange-100 text-orange-800"]: state === "CANCELED",
-              })}
-            >
-              {state}
-            </span>
+            <DeployStatus project={slug} />
           </span>
 
           {url && (
