@@ -71,6 +71,8 @@ export async function getProjectURL(slug: string) {
 
   const data = await getVercelProject(vercelId);
   if (data.error) return null;
+  if (!data.targets?.production?.alias?.[0]) return null;
+
   return data.targets.production.alias[0];
 }
 
