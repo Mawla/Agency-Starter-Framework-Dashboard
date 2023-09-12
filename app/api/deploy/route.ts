@@ -1,5 +1,5 @@
 import { vFetch } from "@/lib/queries/fetch";
-import { getDeployHook } from "@/lib/queries/get-project";
+import { getDeployHook } from "@/lib/queries/project";
 import { sanityServerClient } from "@/lib/sanity.server";
 import { auth } from "@clerk/nextjs";
 import { NextApiResponse } from "next";

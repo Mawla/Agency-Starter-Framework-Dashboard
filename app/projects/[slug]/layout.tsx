@@ -4,7 +4,7 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 import ProjectNav from "@/components/nav/ProjectNav";
-import { getProjectURL } from "@/lib/queries/get-project";
+import { getProjectURL } from "@/lib/queries/project";
 import DeployStatus from "@/components/project/DeployStatus";
 import { redirect } from "next/navigation";
 

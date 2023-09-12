@@ -1,6 +1,6 @@
 import DeployStatus from "@/components/project/DeployStatus";
 
-import { getProject } from "@/lib/queries/get-project";
+import { getProject } from "@/lib/queries/project";
 import { notFound } from "next/navigation";
 
 async function getData(slug: string) {

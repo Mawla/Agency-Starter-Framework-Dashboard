@@ -1,4 +1,4 @@
-import { getProjectURL } from "@/lib/queries/get-project";
+import { getProjectURL } from "@/lib/queries/project";
 import { notFound } from "next/navigation";
 
 export default async function Page({ params }: { params: { slug: string } }) {
