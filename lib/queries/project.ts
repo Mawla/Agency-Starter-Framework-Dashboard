@@ -3,6 +3,7 @@
 import groq from "groq";
 import { sanityServerClient } from "../sanity.server";
 import { sFetch, vFetch } from "./fetch";
+import { SanityProjectMember, SanityUser } from "next-sanity";
 
 /**
  * Get all project data across platforms
@@ -37,6 +38,22 @@ export async function getProjectIds(slug: string) {
 
   if (!ids) return null;
   return ids;
+}
+
+/**
+ * Get sanity id by slug
+ */
+
+export async function getSanityId(slug: string) {
+  const sanityId = await sanityServerClient.fetch(
+    groq`*[_type == 'project' && slug.current == $slug][0]{
+      "sanityId": sanity.id,
+    }.sanityId`,
+    { slug },
+  );
+
+  if (!sanityId) return null;
+  return sanityId;
 }
 
 /**
@@ -139,4 +156,74 @@ export async function getDeployHook(slug: string) {
 
   if (!hook) return null;
   return hook;
+}
+
+/**
+ * Get sanity users for project
+ */
+
+export async function getSanityUser(userId: string) {
+  const user = await sFetch(
+    `https://api.sanity.io/v2021-06-07/users/${userId}`,
+    undefined,
+    "GET",
+  );
+  if (!user) return null;
+  return user;
+}
+
+/**
+ * Get sanity users for project
+ */
+
+export async function getUsers(slug: string) {
+  const sanityId = await getSanityId(slug);
+  if (!sanityId) return null;
+
+  const sanityProject = await getSanityProject(sanityId);
+  if (!sanityProject) return null;
+
+  const users: SanityUserMember[] = await Promise.all(
+    sanityProject.members.map(async (member: SanityProjectMember) => {
+      if (member.isRobot) return;
+      const memberId = member.id;
+      const user = await getSanityUser(memberId);
+      if (!user) return;
+      return {
+        ...user,
+        ...member,
+      };
+    }),
+  );
+
+  return users.filter(Boolean);
+}
+
+/**
+ * Get sanity invitations for project
+ */
+
+export async function getInvitations(slug: string) {
+  const sanityId = await getSanityId(slug);
+  if (!sanityId) return null;
+
+  const sanityProject = await getSanityProject(sanityId);
+  if (!sanityProject) return null;
+  const invites: SanityInvite[] = await sFetch(
+    `https://api.sanity.io/v2021-06-07/invitations/project/${sanityId}`,
+    undefined,
+    "GET",
+  );
+  if (!invites) return null;
+  return invites;
+}
+
+export async function revokeInvitation(invitationId: string) {
+  const invites: SanityInvite[] = await sFetch(
+    `https://api.sanity.io/v2021-06-07/invitations/${invitationId}`,
+    undefined,
+    "DELETE",
+  );
+  if (!invites) return null;
+  return invites;
 }

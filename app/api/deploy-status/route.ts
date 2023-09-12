@@ -1,4 +1,4 @@
-import { getProjectStatus } from "@/lib/queries/get-project";
+import { getProjectStatus } from "@/lib/queries/project";
 import { auth } from "@clerk/nextjs";
 import { NextApiResponse } from "next";
 import { NextResponse } from "next/server";
