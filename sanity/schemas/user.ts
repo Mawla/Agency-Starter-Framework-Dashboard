@@ -39,7 +39,7 @@ export default defineType({
     defineField({
       name: "projects",
       type: "array",
-      of: [{ type: "reference", to: { type: "project" } }],
+      of: [{ type: "reference", weak: true, to: { type: "project" } }],
     }),
   ],
 });
