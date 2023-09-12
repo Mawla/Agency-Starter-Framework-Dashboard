@@ -8,27 +8,7 @@ import {
 } from "@/components/ui/card";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { auth } from "@clerk/nextjs";
-import { groq } from "next-sanity";
-import { sanityServerClient } from "@/lib/sanity.server";
-
-async function getProjects() {
-  const { userId }: { userId: string | null } = auth();
-
-  const projects = await sanityServerClient.fetch(
-    groq`
-    *[_type == "user" && clerk.id == $userId] {
-      projects[] -> {
-        title,
-        "slug": slug.current,
-      }
-    }[0].projects
-    `,
-    { userId },
-  );
-
-  return projects;
-}
+import { getProjects } from "@/lib/queries/get-project";
 
 export default async function Page({ params }: { params: { userid: string } }) {
   let projects = await getProjects();
@@ -81,6 +61,17 @@ export default async function Page({ params }: { params: { userid: string } }) {
                 <div key={project.slug}>
                   <Card>
                     <CardHeader>
+                      {project.logo && (
+                        <div
+                          className="h-10"
+                          style={{
+                            background: project.background || "white",
+                          }}
+                        >
+                          <img src={project.logo} height={40} />
+                        </div>
+                      )}
+
                       <CardTitle>
                         <Link
                           href={`/projects/${project.slug}`}

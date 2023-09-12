@@ -3,6 +3,46 @@
 import groq from "groq";
 import { sanityServerClient } from "../sanity.server";
 import { sFetch, vFetch } from "./fetch";
+import { auth } from "@clerk/nextjs/server";
+
+/**
+ * Get projects for user
+ */
+
+export async function getProjects() {
+  const { userId }: { userId: string | null } = auth();
+
+  let projects = await sanityServerClient.fetch(
+    groq`
+      array::compact(*[_type == "user" && clerk.id == $userId] {
+        projects[] -> {
+          title,
+          "slug": slug.current,
+          "sanityId": sanity.id
+        }
+      }[0].projects)
+      `,
+    { userId },
+  );
+
+  if (!projects) return null;
+
+  projects = await Promise.all(
+    projects.map(async (project: any) => {
+      const res = await fetch(
+        `https://${project.sanityId}.api.sanity.io/vX/data/query/production?query=*%5B_id+%3D%3D+%27config_seo%27%5D%5B0%5D+%7B%0A++%22favicon%22%3A+favicon.favicon_32x32_png.asset-%3Eurl%0A%7D.favicon`,
+      );
+      const obj = await res.json();
+
+      return {
+        ...project,
+        logo: obj.result,
+      };
+    }),
+  );
+
+  return projects;
+}
 
 /**
  * Get all project data across platforms
