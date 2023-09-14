@@ -22,7 +22,7 @@ import { getProjectIds } from "@/lib/queries/get-project";
 
 export async function POST(_req: Request, res: NextApiResponse) {
   const queue = new PQueue({
-    concurrency: 4,
+    concurrency: 10,
     interval: 1000 / 25,
   });
 
