@@ -20,32 +20,6 @@ import { getProjectIds } from "@/lib/queries/get-project";
  * However I prefer having all admin logic in this project if possible.
  */
 
-async function downloadUpload(
-  sanityId: string,
-  doc: {
-    originalFilename: string;
-    url: string;
-    mimeType: string;
-    _id: string;
-    assetId: string;
-    uploadId: string;
-  },
-) {
-  console.log(`downloading ${doc.originalFilename}`);
-  const image = await fetch(doc.url);
-  const imageBuffer = await image.buffer();
-
-  console.log(`uploading ${doc.originalFilename}`);
-  const result = await sFetch(
-    `https://${sanityId}.api.sanity.io/v2021-03-25/assets/images/production`,
-    imageBuffer,
-    "POST",
-    doc.mimeType || "image/jpeg",
-    true,
-  );
-  console.log(result.document._id);
-}
-
 export async function POST(_req: Request, res: NextApiResponse) {
   const queue = new PQueue({
     concurrency: 4,
@@ -66,6 +40,31 @@ export async function POST(_req: Request, res: NextApiResponse) {
     return NextResponse.json({
       ok: 0,
     });
+  }
+
+  const assetConversionMap: Record<string, any> = {};
+
+  /**
+   * Download original asset and upload to new project
+   * keeping a list of ids to update references in documents
+   */
+
+  async function downloadUpload(sanityId: string, doc: any) {
+    console.log(`downloading ${doc.originalFilename}`);
+    const image = await fetch(doc.url);
+    const imageBuffer = await image.buffer();
+
+    console.log(`uploading ${doc.originalFilename}`);
+    const result = await sFetch(
+      `https://${sanityId}.api.sanity.io/v2021-03-25/assets/images/production`,
+      imageBuffer,
+      "POST",
+      doc.mimeType || "image/jpeg",
+      true,
+    );
+    console.log(result.document._id);
+
+    assetConversionMap[doc._id] = result.document;
   }
 
   // create clean dataset
@@ -102,6 +101,11 @@ export async function POST(_req: Request, res: NextApiResponse) {
       queue.add(() => downloadUpload(sanityId, doc));
     });
 
+  await queue.onIdle();
+  console.log("queue is idle, starting mutation import");
+
+  console.log(assetConversionMap);
+
   const mutations = templateData.result
     // filter out system documents
     .filter(({ _id }: any) => !_id.startsWith("_."))
@@ -119,15 +123,18 @@ export async function POST(_req: Request, res: NextApiResponse) {
       };
     });
 
-  await queue.onIdle();
-  console.log("queue is idle, starting mutation import");
+  let mutationsString = JSON.stringify(mutations);
+  Object.entries(assetConversionMap).forEach(([oldId, uploadAssetDoc]) => {
+    // console.log(`replacing ${oldId} with ${newId}`);
+    mutationsString = mutationsString.replaceAll(oldId, uploadAssetDoc._id);
+  });
 
-  console.log("\n\n\n\n");
-  console.log(JSON.stringify(mutations));
+  // console.log("\n\n\n\n");
+  // console.log(JSON.stringify(mutations));
 
   const importAction = await sFetch(
     `https://${sanityId}.api.sanity.io/v2023-09-14/data/mutate/production`,
-    { mutations },
+    { mutations: JSON.parse(mutationsString) },
     "POST",
   );
 
@@ -138,15 +145,3 @@ export async function POST(_req: Request, res: NextApiResponse) {
     ok: 1,
   });
 }
-
-// This doesn't work, throws a stream error
-// await exportDataset({
-//   client: sanityProjectServerClient,
-//   dataset: "production",
-//   outputPath: `/tmp/${sanityProjectId}.tar.gz`, // Path to write tar.gz-archive file to, or `-` for stdout
-//   assets: true, // Whether or not to export assets. Note that this operation is currently slightly lossy; metadata stored on the asset document itself (original filename, for instance) might be lost
-//   raw: false, // Exports documents only, without downloading or rewriting asset references
-//   drafts: true,
-//   assetConcurrency: 12,
-//   onProgress: () => null,
-// });
