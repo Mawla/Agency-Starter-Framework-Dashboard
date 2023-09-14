@@ -93,25 +93,31 @@ export async function POST(_req: Request, res: NextApiResponse) {
   console.log(`got ${templateData.result.length} documents`);
   console.log("importing template dataset");
 
+  templateData.result
+    .filter(
+      ({ _type }: any) =>
+        _type === "sanity.imageAsset" || _type === "sanity.fileAsset",
+    )
+    .map((doc: any) => {
+      queue.add(() => downloadUpload(sanityId, doc));
+    });
+
   const mutations = templateData.result
     // filter out system documents
     .filter(({ _id }: any) => !_id.startsWith("_."))
 
-    // upload assets or return document
+    // filter out assets
+    .filter(
+      ({ _type }: any) =>
+        _type !== "sanity.imageAsset" && _type !== "sanity.fileAsset",
+    )
+
+    // create mutation
     .map((doc: any) => {
-      if (
-        doc._type === "sanity.imageAsset" ||
-        doc._type === "sanity.fileAsset"
-      ) {
-        queue.add(() => downloadUpload(sanityId, doc));
-        return null;
-      } else {
-        return {
-          create: doc,
-        };
-      }
-    })
-    .filter(Boolean);
+      return {
+        create: doc,
+      };
+    });
 
   await queue.onIdle();
   console.log("queue is idle, starting mutation import");
