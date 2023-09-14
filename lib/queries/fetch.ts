@@ -2,15 +2,21 @@
  * Sanity fetch
  */
 
-export async function sFetch(url: string, body?: any, method = "POST") {
+export async function sFetch(
+  url: string,
+  body?: any,
+  method = "POST",
+  contentType = "application/json",
+  raw = false,
+) {
   const params: any = {
     headers: {
       Authorization: `Bearer ${process.env.ADMIN_SANITY_TOKEN}`,
-      "Content-Type": "application/json",
+      "Content-Type": contentType,
     },
     method,
   };
-  if (body) params.body = JSON.stringify(body);
+  if (body) params.body = raw ? body : JSON.stringify(body);
 
   const res = await fetch(url, params);
   const obj = await res.json();

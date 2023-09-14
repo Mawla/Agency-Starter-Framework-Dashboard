@@ -1,5 +1,7 @@
 "server-only";
 
+import PQueue from "p-queue";
+const fetch = require("node-fetch");
 import { sFetch } from "@/lib/queries/fetch";
 import { auth } from "@clerk/nextjs/server";
 import { NextApiResponse } from "next";
@@ -18,8 +20,38 @@ import { getProjectIds } from "@/lib/queries/get-project";
  * However I prefer having all admin logic in this project if possible.
  */
 
-// qdtcnn4r
+async function downloadUpload(
+  sanityId: string,
+  doc: {
+    originalFilename: string;
+    url: string;
+    mimeType: string;
+    _id: string;
+    assetId: string;
+    uploadId: string;
+  },
+) {
+  console.log(`downloading ${doc.originalFilename}`);
+  const image = await fetch(doc.url);
+  const imageBuffer = await image.buffer();
+
+  console.log(`uploading ${doc.originalFilename}`);
+  const result = await sFetch(
+    `https://${sanityId}.api.sanity.io/v2021-03-25/assets/images/production`,
+    imageBuffer,
+    "POST",
+    doc.mimeType || "image/jpeg",
+    true,
+  );
+  console.log(result.document._id);
+}
+
 export async function POST(_req: Request, res: NextApiResponse) {
+  const queue = new PQueue({
+    concurrency: 4,
+    interval: 1000 / 25,
+  });
+
   const { userId }: { userId: string | null } = auth();
   if (!userId) {
     return res.status(401).json({ error: "Not authenticated" });
@@ -38,16 +70,15 @@ export async function POST(_req: Request, res: NextApiResponse) {
 
   // create clean dataset
   console.log("deleting dataset");
-  const SANITY_DATASET = "production";
   await sFetch(
-    `https://api.sanity.io/v2021-06-07/projects/${sanityId}/datasets/${SANITY_DATASET}`,
+    `https://api.sanity.io/v2021-06-07/projects/${sanityId}/datasets/production`,
     undefined,
     "DELETE",
   );
 
   console.log("creating dataset");
   await sFetch(
-    `https://api.sanity.io/v2021-06-07/projects/${sanityId}/datasets/${SANITY_DATASET}`,
+    `https://api.sanity.io/v2021-06-07/projects/${sanityId}/datasets/production`,
     undefined,
     "PUT",
   );
@@ -63,10 +94,30 @@ export async function POST(_req: Request, res: NextApiResponse) {
   console.log("importing template dataset");
 
   const mutations = templateData.result
+    // filter out system documents
     .filter(({ _id }: any) => !_id.startsWith("_."))
-    .map((doc: any) => ({
-      create: doc,
-    }));
+
+    // upload assets or return document
+    .map((doc: any) => {
+      if (
+        doc._type === "sanity.imageAsset" ||
+        doc._type === "sanity.fileAsset"
+      ) {
+        queue.add(() => downloadUpload(sanityId, doc));
+        return null;
+      } else {
+        return {
+          create: doc,
+        };
+      }
+    })
+    .filter(Boolean);
+
+  await queue.onIdle();
+  console.log("queue is idle, starting mutation import");
+
+  console.log("\n\n\n\n");
+  console.log(JSON.stringify(mutations));
 
   const importAction = await sFetch(
     `https://${sanityId}.api.sanity.io/v2023-09-14/data/mutate/production`,
