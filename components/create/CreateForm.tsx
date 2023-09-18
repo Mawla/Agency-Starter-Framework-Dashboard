@@ -259,7 +259,7 @@ export default function CreateForm() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectItem value="empty">An empty CMS</SelectItem>
-                    <SelectItem value="qdtcnn4r">SaaS 1 Template</SelectItem>
+                    <SelectItem value="qdtcnn4r">Growth Marketing Playbook</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
