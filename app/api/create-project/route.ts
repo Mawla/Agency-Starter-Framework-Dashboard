@@ -115,7 +115,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
    * Export template dataset and import into new dataset
    */
 
-  if (dataset) {
+  if (dataset !== "empty") {
     log(`Importing dataset ${dataset}`);
 
     const queue = new PQueue({
