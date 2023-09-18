@@ -1,5 +1,6 @@
 import DeleteButton from "@/components/project/DeleteButton";
 import DeployButton from "@/components/project/DeployButton";
+import GenerateColorsetButton from "@/components/project/GenerateColorsetButton";
 import ImportDataset from "@/components/project/ImportDataset";
 import { notFound } from "next/navigation";
 
@@ -24,6 +25,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
         <li>deployments</li>
         <li>redeploy</li>
       </ul>
+
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold mb-4">Colors</h2>
+        <GenerateColorsetButton project={slug} />
+      </div>
     </div>
   );
 }

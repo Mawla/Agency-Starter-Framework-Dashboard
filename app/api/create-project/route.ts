@@ -5,6 +5,9 @@ import { auth } from "@clerk/nextjs";
 import { NextApiResponse } from "next";
 import { groq } from "next-sanity";
 import { NextResponse } from "next/server";
+import PQueue from "p-queue";
+const nodeFetch = require("node-fetch");
+import { nanoid } from "nanoid";
 
 /**
  * Useful links
@@ -20,6 +23,8 @@ export async function POST(_req: Request, res: NextApiResponse) {
 
   const params = await _req.json();
   const projectName = slugify(params.projectName);
+  const colors = params.colors;
+  const dataset = params.dataset;
 
   if (!projectName) {
     return NextResponse.json({
@@ -105,6 +110,147 @@ export async function POST(_req: Request, res: NextApiResponse) {
     undefined,
     "PUT",
   );
+
+  /**
+   * Export template dataset and import into new dataset
+   */
+
+  if (dataset) {
+    log(`Importing dataset ${dataset}`);
+
+    const queue = new PQueue({
+      concurrency: 10,
+      interval: 1000 / 25,
+    });
+
+    const assetConversionMap: Record<string, any> = {};
+
+    /**
+     * Download original asset and upload to new project
+     * keeping a list of ids to update references in documents
+     */
+
+    async function downloadUpload(sanityId: string, doc: any) {
+      console.log(`downloading ${doc.originalFilename}`);
+      const image = await nodeFetch(doc.url);
+      const imageBuffer = await image.buffer();
+
+      console.log(`uploading ${doc.originalFilename}`);
+      const result = await sFetch(
+        `https://${sanityId}.api.sanity.io/v2021-03-25/assets/images/production`,
+        imageBuffer,
+        "POST",
+        doc.mimeType || "image/jpeg",
+        true,
+      );
+      console.log(result.document._id);
+
+      assetConversionMap[doc._id] = result.document;
+    }
+
+    // import template dataset
+    console.log("fetching template dataset");
+    const templateData = await sFetch(
+      `https://${dataset}.api.sanity.io/v2023-09-14/data/query/production?query=*`,
+      undefined,
+      "GET",
+    );
+    console.log(`Got ${templateData.result.length} documents`);
+    console.log("Starting asset download/upload");
+
+    templateData.result
+      .filter(
+        ({ _type }: any) =>
+          _type === "sanity.imageAsset" || _type === "sanity.fileAsset",
+      )
+      .map((doc: any) => {
+        queue.add(() => downloadUpload(SANITY_PROJECT_ID, doc));
+      });
+
+    await queue.onIdle();
+    log("Asset download/upload queue is idle, starting mutation import");
+
+    log(JSON.stringify(assetConversionMap));
+
+    const mutations = templateData.result
+      // filter out system documents
+      .filter(({ _id }: any) => !_id.startsWith("_."))
+
+      // filter out assets
+      .filter(
+        ({ _type }: any) =>
+          _type !== "sanity.imageAsset" && _type !== "sanity.fileAsset",
+      )
+
+      // create mutation
+      .map((doc: any) => {
+        return {
+          create: doc,
+        };
+      });
+
+    let mutationsString = JSON.stringify(mutations);
+    Object.entries(assetConversionMap).forEach(([oldId, uploadAssetDoc]) => {
+      mutationsString = mutationsString.replaceAll(oldId, uploadAssetDoc._id);
+    });
+
+    const importAction = await sFetch(
+      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+      { mutations: JSON.parse(mutationsString) },
+      "POST",
+    );
+
+    log(importAction);
+    if (importAction?.error) log(importAction?.error?.items);
+    log("Done importing dataset");
+  }
+
+  /**
+   * Import color palette
+   */
+
+  if (colors) {
+    log(`Importing color palette ${colors}`);
+
+    // create theme document if it doesn't exist
+    await sFetch(
+      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+      {
+        mutations: [
+          {
+            createIfNotExists: {
+              _id: "config_theme",
+              _type: "config.theme",
+            },
+          },
+        ],
+      },
+      "POST",
+    );
+
+    // import colors
+    await sFetch(
+      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+      {
+        mutations: [
+          {
+            patch: {
+              id: "config_theme",
+              set: {
+                colors: colors.map((color: any) => ({
+                  _key: nanoid(),
+                  _type: "color",
+                  name: color.name,
+                  value: color.value,
+                })),
+              },
+            },
+          },
+        ],
+      },
+      "POST",
+    );
+  }
 
   /**
    * Create random tokens
