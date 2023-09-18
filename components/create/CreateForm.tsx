@@ -113,6 +113,9 @@ export default function CreateForm() {
     { name: "brand5-light", value: "" },
     { name: "brand5-dark", value: "" },
     { name: "brand5-contrast", value: "" },
+    { name: "bg-light", value: "" },
+    { name: "bg-medium", value: "" },
+    { name: "bg-dark", value: "" },
     { name: "text-light", value: "#9ca3af" },
     { name: "text-medium", value: "#4b5563" },
     { name: "text-dark", value: "#111827" },
@@ -196,6 +199,24 @@ export default function CreateForm() {
     newPalette[indexLight].value = lighten(value);
     newPalette[indexDark].value = darken(value);
     newPalette[indexContrast].value = contrast(value);
+
+    // use brand 2 also for backgrounds
+    if (name === "brand2") {
+      const bgLightIndex = newPalette.findIndex(
+        (color) => color.name === "bg-light",
+      );
+      const bgMediumIndex = newPalette.findIndex(
+        (color) => color.name === "bg-medium",
+      );
+      const bgDarkIndex = newPalette.findIndex(
+        (color) => color.name === "bg-dark",
+      );
+
+      newPalette[bgLightIndex].value = lighten(value);
+      newPalette[bgMediumIndex].value = value;
+      newPalette[bgDarkIndex].value = darken(value);
+    }
+
     console.log(newPalette);
     setPalette(newPalette);
   }, []);
@@ -249,7 +270,7 @@ export default function CreateForm() {
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Colors</Label>
               <p className="text-gray-500 font-normal text-xs">
-                Select 5 brand colors
+                Select 5 brand colors. (Don't worry, you can change this later)
               </p>
               <div className="grid grid-cols-5 gap-px">
                 {["brand1", "brand2", "brand3", "brand4", "brand5"].map(
