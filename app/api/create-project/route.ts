@@ -22,7 +22,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   }
 
   const params = await _req.json();
-  const projectName = slugify(params.projectName);
+  const projectName = `sgw-${slugify(params.projectName)}`;
   const colors = params.colors;
   const dataset = params.dataset;
 
@@ -200,7 +200,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
       "POST",
     );
 
-    log(importAction);
+    // log(importAction);
     if (importAction?.error) log(importAction?.error?.items);
     log("Done importing dataset");
   }
@@ -210,7 +210,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
    */
 
   if (colors) {
-    log(`Importing color palette ${colors}`);
+    log(`Importing color palette`);
 
     // create theme document if it doesn't exist
     await sFetch(
