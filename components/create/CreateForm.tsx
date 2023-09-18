@@ -1,4 +1,5 @@
 "use client";
+import { useToast } from "@/components/ui/use-toast";
 
 import { Input } from "../ui/input";
 import { FormEvent, useCallback, useState } from "react";
@@ -88,6 +89,7 @@ const EXAMPLE_PALETTES: { name: string; colors: ColorType[] }[] = [
 ];
 
 export default function CreateForm() {
+  const { toast } = useToast();
   const [state, setState] = useState<"stale" | "submitting" | "error">("stale");
   const router = useRouter();
 
@@ -126,10 +128,28 @@ export default function CreateForm() {
 
       const form = e.target as HTMLFormElement;
       const projectName = form.projectName.value;
-      if (!projectName) return;
+      if (!projectName) {
+        form.projectName.focus();
+        return toast({
+          title: "Please select a project name",
+          variant: "destructive",
+        });
+      }
 
       const dataset = form.dataset.value;
-      if (!dataset) return;
+      if (!dataset) {
+        return toast({
+          title: "Please select a way to set up the CMS",
+          variant: "destructive",
+        });
+      }
+
+      if (palette.some((color) => !color.value)) {
+        return toast({
+          title: "Please select a color for each palette",
+          variant: "destructive",
+        });
+      }
 
       async function createProject() {
         setState("submitting");
@@ -158,7 +178,7 @@ export default function CreateForm() {
 
       createProject();
     },
-    [router],
+    [router, palette],
   );
 
   const onSwatchChange = useCallback((name: string, value: string) => {
@@ -215,11 +235,10 @@ export default function CreateForm() {
               <Label htmlFor="name">CMS setup</Label>
               <Select name="dataset">
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="How do you want to start?" />
+                  <SelectValue placeholder="How would you like to start the project?" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Dataset</SelectLabel>
                     <SelectItem value="empty">An empty CMS</SelectItem>
                     <SelectItem value="qdtcnn4r">SaaS 1 Template</SelectItem>
                   </SelectGroup>
@@ -236,7 +255,7 @@ export default function CreateForm() {
               <div className="grid grid-cols-5 gap-px">
                 {["brand1", "brand2", "brand3", "brand4", "brand5"].map(
                   (name) => (
-                    <div className="grid grid-cols-3 gap-px">
+                    <div className="grid grid-cols-3 gap-px" key={name}>
                       <div className="col-span-3">
                         <Swatch
                           palette={palette}
@@ -267,8 +286,8 @@ export default function CreateForm() {
               <div>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button size="xs" variant="outline">
-                      or select a preset
+                    <Button size="xs" variant="outline" className="font-normal">
+                      …select a color preset
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-60">

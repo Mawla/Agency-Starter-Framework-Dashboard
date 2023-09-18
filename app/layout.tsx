@@ -1,3 +1,5 @@
+import { Toaster } from "@/components/ui/toaster";
+
 import "./globals.css";
 import type { Metadata } from "next";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
@@ -39,6 +41,7 @@ export default function RootLayout({
               {children}
             </div>
           </div>
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

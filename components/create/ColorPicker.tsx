@@ -5,6 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Input } from "../ui/input";
 
 export const ColorPicker = ({
   color,
@@ -17,12 +18,13 @@ export const ColorPicker = ({
     <Popover>
       <PopoverTrigger asChild>
         <div
-          className="aspect-square border border-[rgba(0,0,0,0.05)])]"
-          style={{ backgroundColor: color ? color : undefined }}
+          className="aspect-square border border-[rgba(0,0,0,.05)]"
+          style={{ backgroundColor: color ? color : "#fafafa" }}
         />
       </PopoverTrigger>
-      <PopoverContent className="w-60">
+      <PopoverContent className="w-60 grid gap-1">
         <HexColorPicker color={color} onChange={onChange} />
+        <Input value={color} onChange={(e) => onChange?.(e.target.value)} />
       </PopoverContent>
     </Popover>
   );
