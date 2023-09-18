@@ -271,7 +271,7 @@ export default function CreateForm() {
               <p className="text-gray-500 font-normal text-xs">
                 Select 5 brand colors. (Don't worry, you can change this later)
               </p>
-              <pre>{JSON.stringify(palette, null, 2)}</pre>
+
               <div className="grid grid-cols-5 gap-px">
                 {["brand1", "brand2", "brand3", "brand4", "brand5"].map(
                   (name) => (
