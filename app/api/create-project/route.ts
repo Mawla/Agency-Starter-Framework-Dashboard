@@ -25,6 +25,8 @@ export async function POST(_req: Request, res: NextApiResponse) {
   const projectName = `sgw-${slugify(params.projectName)}`;
   const colors = params.colors;
   const dataset = params.dataset;
+  const headingFont = params.headingFont;
+  const bodyFont = params.bodyFont;
 
   if (!projectName) {
     return NextResponse.json({
@@ -205,30 +207,35 @@ export async function POST(_req: Request, res: NextApiResponse) {
     log("Done importing dataset");
   }
 
+  // create theme document if it doesn't exist
+  await sFetch(
+    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+    {
+      mutations: [
+        { createIfNotExists: { _id: "config_theme", _type: "config.theme" } },
+      ],
+    },
+    "POST",
+  );
+
+  // create seo document if it doesn't exist
+  await sFetch(
+    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+    {
+      mutations: [
+        { createIfNotExists: { _id: "config_seo", _type: "config.seo" } },
+        { patch: { id: "config_seo", set: { "title.en": projectName } } },
+      ],
+    },
+    "POST",
+  );
+
   /**
-   * Import color palette
+   * Import colors
    */
 
   if (colors) {
     log(`Importing color palette`);
-
-    // create theme document if it doesn't exist
-    await sFetch(
-      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-      {
-        mutations: [
-          {
-            createIfNotExists: {
-              _id: "config_theme",
-              _type: "config.theme",
-            },
-          },
-        ],
-      },
-      "POST",
-    );
-
-    // import colors
     await sFetch(
       `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
       {
@@ -243,6 +250,146 @@ export async function POST(_req: Request, res: NextApiResponse) {
                   name: color.name,
                   value: color.value,
                 })),
+              },
+            },
+          },
+        ],
+      },
+      "POST",
+    );
+  }
+
+  /**
+   * Import fonts
+   */
+
+  if (headingFont || bodyFont) {
+    log(`Importing fonts`);
+    await sFetch(
+      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+      {
+        mutations: [
+          {
+            patch: {
+              id: "config_theme",
+              setIfMissing: {
+                stylesheets: [],
+              },
+            },
+          },
+          {
+            patch: {
+              id: "config_theme",
+              insert: {
+                stylesheets: {
+                  _key: nanoid(),
+                  _type: "stylesheet",
+                  name: "Heading font",
+                  value: headingFont.cssImport,
+                },
+              },
+            },
+          },
+          {
+            patch: {
+              id: "config_theme",
+              insert: {
+                stylesheets: {
+                  _key: nanoid(),
+                  _type: "stylesheet",
+                  name: "Body font",
+                  value: bodyFont.cssImport,
+                },
+              },
+            },
+          },
+          {
+            patch: {
+              id: "config_theme",
+              insert: {
+                fontFamily: {
+                  _key: nanoid(),
+                  name: "heading",
+                  value: `${headingFont.name} ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
+                },
+              },
+            },
+          },
+          {
+            patch: {
+              id: "config_theme",
+              insert: {
+                fontFamily: {
+                  _key: nanoid(),
+                  name: "text",
+                  value: `${bodyFont.name} ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
+                },
+              },
+            },
+          },
+        ],
+      },
+      "POST",
+    );
+
+    const ogTitleFontFile = await nodeFetch(headingFont.boldFontFileURL);
+    const ogTitleFontFileBuffer = await ogTitleFontFile.buffer();
+    const ogTitleFontFileResult = await sFetch(
+      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-03-25/assets/files/production`,
+      ogTitleFontFileBuffer,
+      "POST",
+      "font/ttf",
+      true,
+    );
+    const ogMetaFontFile = await nodeFetch(headingFont.regularFontFileURL);
+    const ogMetaFontFileBuffer = await ogMetaFontFile.buffer();
+    const ogMetaFontFileResult = await sFetch(
+      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-03-25/assets/files/production`,
+      ogMetaFontFileBuffer,
+      "POST",
+      "font/ttf",
+      true,
+    );
+
+    // set font references
+    await sFetch(
+      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+      {
+        mutations: [
+          {
+            patch: {
+              id: "config_seo",
+              set: {
+                "opengraphimage.titleFont": {
+                  _type: "file",
+                  asset: {
+                    _type: "reference",
+                    _ref: ogTitleFontFileResult.document._id,
+                  },
+                },
+              },
+            },
+          },
+          {
+            patch: {
+              id: "config_seo",
+              set: {
+                "opengraphimage.metaFont": {
+                  _type: "file",
+                  asset: {
+                    _type: "reference",
+                    _ref: ogMetaFontFileResult.document._id,
+                  },
+                },
+              },
+            },
+          },
+          {
+            patch: {
+              id: "config_seo",
+              set: {
+                color: colors.find((color: any) => color.name === "brand1")
+                  .value,
               },
             },
           },
@@ -268,6 +415,23 @@ export async function POST(_req: Request, res: NextApiResponse) {
   });
   obj = await q.json();
   const SANITY_WEBHOOK_SECRET = obj.join("_");
+
+  // set CMS preview secret
+  await sFetch(
+    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+    {
+      mutations: [
+        { createIfNotExists: { _id: "config_cms", _type: "config.cms" } },
+        {
+          patch: {
+            _id: "config_seo",
+            set: { previewSecret: SANITY_PREVIEW_SECRET },
+          },
+        },
+      ],
+    },
+    "POST",
+  );
 
   /**
    * Create Sanity WRITE token

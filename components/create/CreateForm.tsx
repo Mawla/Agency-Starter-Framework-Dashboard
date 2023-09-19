@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { contrast, darken, lighten } from "@/lib/helpers/color";
 import Swatch from "./Swatch";
+import FontPicker, { FontInfo } from "./FontPicker";
 
 type ColorType = {
   name: string;
@@ -91,6 +92,9 @@ export default function CreateForm() {
   const { toast } = useToast();
   const [state, setState] = useState<"stale" | "submitting" | "error">("stale");
   const router = useRouter();
+
+  const [headingFont, setHeadingFont] = useState<FontInfo | null>(null);
+  const [bodyFont, setBodyFont] = useState<FontInfo | null>(null);
 
   const [palette, setPalette] = useState<ColorType[]>([
     { name: "brand1", value: "" },
@@ -165,6 +169,8 @@ export default function CreateForm() {
               projectName,
               dataset,
               colors: palette,
+              headingFont,
+              bodyFont,
             }),
           },
         );
@@ -180,7 +186,7 @@ export default function CreateForm() {
 
       createProject();
     },
-    [router, palette],
+    [router, palette, headingFont, bodyFont],
   );
 
   const onSwatchChange = useCallback((name: string, value: string) => {
@@ -259,17 +265,21 @@ export default function CreateForm() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectItem value="empty">An empty CMS</SelectItem>
-                    <SelectItem value="qdtcnn4r">Growth Marketing Playbook</SelectItem>
+                    <SelectItem value="qdtcnn4r">
+                      Growth Marketing Playbook
+                    </SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
 
+            <hr />
+
             {/* theme */}
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Colors</Label>
               <p className="text-gray-500 font-normal text-xs">
-                Select 5 brand colors. (Don't worry, you can change this later)
+                Select 5 brand colors.
               </p>
 
               <div className="grid grid-cols-5 gap-px">
@@ -339,8 +349,17 @@ export default function CreateForm() {
                 </Popover>
               </div>
             </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="name">Heading font</Label>
+              <FontPicker name="heading" onChange={setHeadingFont} />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="name">Body font</Label>
+              <FontPicker name="body" onChange={setBodyFont} />
+            </div>
           </div>
         </CardContent>
+
         <CardFooter className="flex justify-between">
           {state === "stale" && (
             <Button variant="outline" asChild>
