@@ -34,7 +34,7 @@ import { contrast, darken, lighten } from "@/lib/helpers/color";
 import Swatch from "./Swatch";
 import FontPicker, { FontInfo } from "./FontPicker";
 
-type ColorType = {
+export type ColorType = {
   name: string;
   value: string;
 };

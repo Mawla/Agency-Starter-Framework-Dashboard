@@ -5,9 +5,11 @@ import { auth } from "@clerk/nextjs";
 import { NextApiResponse } from "next";
 import { groq } from "next-sanity";
 import { NextResponse } from "next/server";
-import PQueue from "p-queue";
-const nodeFetch = require("node-fetch");
-import { nanoid } from "nanoid";
+
+import { patchThemeFonts } from "./patch-theme-fonts";
+import { patchSeoOpenGraph } from "./patch-seo-opengraph";
+import { patchThemeColors } from "./patch-theme-colors";
+import { exportImportDataset } from "./export-import-dataset";
 
 /**
  * Useful links
@@ -104,6 +106,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   /**
    * Create Sanity dataset
    */
+
   log("Creating Sanity dataset");
 
   const SANITY_DATASET = "production";
@@ -119,91 +122,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
 
   if (dataset !== "empty") {
     log(`Importing dataset ${dataset}`);
-
-    const queue = new PQueue({
-      concurrency: 10,
-      interval: 1000 / 25,
-    });
-
-    const assetConversionMap: Record<string, any> = {};
-
-    /**
-     * Download original asset and upload to new project
-     * keeping a list of ids to update references in documents
-     */
-
-    async function downloadUpload(sanityId: string, doc: any) {
-      console.log(`downloading ${doc.originalFilename}`);
-      const image = await nodeFetch(doc.url);
-      const imageBuffer = await image.buffer();
-
-      console.log(`uploading ${doc.originalFilename}`);
-      const result = await sFetch(
-        `https://${sanityId}.api.sanity.io/v2021-03-25/assets/images/production`,
-        imageBuffer,
-        "POST",
-        doc.mimeType || "image/jpeg",
-        true,
-      );
-      console.log(result.document._id);
-
-      assetConversionMap[doc._id] = result.document;
-    }
-
-    // import template dataset
-    console.log("fetching template dataset");
-    const templateData = await sFetch(
-      `https://${dataset}.api.sanity.io/v2023-09-14/data/query/production?query=*`,
-      undefined,
-      "GET",
-    );
-    console.log(`Got ${templateData.result.length} documents`);
-    console.log("Starting asset download/upload");
-
-    templateData.result
-      .filter(
-        ({ _type }: any) =>
-          _type === "sanity.imageAsset" || _type === "sanity.fileAsset",
-      )
-      .map((doc: any) => {
-        queue.add(() => downloadUpload(SANITY_PROJECT_ID, doc));
-      });
-
-    await queue.onIdle();
-    log("Asset download/upload queue is idle, starting mutation import");
-
-    log(JSON.stringify(assetConversionMap));
-
-    const mutations = templateData.result
-      // filter out system documents
-      .filter(({ _id }: any) => !_id.startsWith("_."))
-
-      // filter out assets
-      .filter(
-        ({ _type }: any) =>
-          _type !== "sanity.imageAsset" && _type !== "sanity.fileAsset",
-      )
-
-      // create mutation
-      .map((doc: any) => {
-        return {
-          create: doc,
-        };
-      });
-
-    let mutationsString = JSON.stringify(mutations);
-    Object.entries(assetConversionMap).forEach(([oldId, uploadAssetDoc]) => {
-      mutationsString = mutationsString.replaceAll(oldId, uploadAssetDoc._id);
-    });
-
-    const importAction = await sFetch(
-      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-      { mutations: JSON.parse(mutationsString) },
-      "POST",
-    );
-
-    // log(importAction);
-    if (importAction?.error) log(importAction?.error?.items);
+    await exportImportDataset({ SANITY_PROJECT_ID, dataset, log });
     log("Done importing dataset");
   }
 
@@ -235,28 +154,11 @@ export async function POST(_req: Request, res: NextApiResponse) {
    */
 
   if (colors) {
-    log(`Importing color palette`);
-    await sFetch(
-      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-      {
-        mutations: [
-          {
-            patch: {
-              id: "config_theme",
-              set: {
-                colors: colors.map((color: any) => ({
-                  _key: nanoid(),
-                  _type: "color",
-                  name: color.name,
-                  value: color.value,
-                })),
-              },
-            },
-          },
-        ],
-      },
-      "POST",
-    );
+    await patchThemeColors({
+      SANITY_PROJECT_ID,
+      colors,
+      log,
+    });
   }
 
   /**
@@ -264,139 +166,18 @@ export async function POST(_req: Request, res: NextApiResponse) {
    */
 
   if (headingFont || bodyFont) {
-    log(`Importing fonts`);
-    await sFetch(
-      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-      {
-        mutations: [
-          {
-            patch: {
-              id: "config_theme",
-              setIfMissing: {
-                stylesheets: [],
-              },
-            },
-          },
-          {
-            patch: {
-              id: "config_theme",
-              insert: {
-                stylesheets: {
-                  _key: nanoid(),
-                  _type: "stylesheet",
-                  name: "Heading font",
-                  value: headingFont.cssImport,
-                },
-              },
-            },
-          },
-          {
-            patch: {
-              id: "config_theme",
-              insert: {
-                stylesheets: {
-                  _key: nanoid(),
-                  _type: "stylesheet",
-                  name: "Body font",
-                  value: bodyFont.cssImport,
-                },
-              },
-            },
-          },
-          {
-            patch: {
-              id: "config_theme",
-              insert: {
-                fontFamily: {
-                  _key: nanoid(),
-                  name: "heading",
-                  value: `${headingFont.name} ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
-                },
-              },
-            },
-          },
-          {
-            patch: {
-              id: "config_theme",
-              insert: {
-                fontFamily: {
-                  _key: nanoid(),
-                  name: "text",
-                  value: `${bodyFont.name} ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
-                },
-              },
-            },
-          },
-        ],
-      },
-      "POST",
-    );
-
-    const ogTitleFontFile = await nodeFetch(headingFont.boldFontFileURL);
-    const ogTitleFontFileBuffer = await ogTitleFontFile.buffer();
-    const ogTitleFontFileResult = await sFetch(
-      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-03-25/assets/files/production`,
-      ogTitleFontFileBuffer,
-      "POST",
-      "font/ttf",
-      true,
-    );
-    const ogMetaFontFile = await nodeFetch(headingFont.regularFontFileURL);
-    const ogMetaFontFileBuffer = await ogMetaFontFile.buffer();
-    const ogMetaFontFileResult = await sFetch(
-      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-03-25/assets/files/production`,
-      ogMetaFontFileBuffer,
-      "POST",
-      "font/ttf",
-      true,
-    );
-
-    // set font references
-    await sFetch(
-      `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-      {
-        mutations: [
-          {
-            patch: {
-              id: "config_seo",
-              set: {
-                "opengraphimage.titleFont": {
-                  _type: "file",
-                  asset: {
-                    _type: "reference",
-                    _ref: ogTitleFontFileResult.document._id,
-                  },
-                },
-              },
-            },
-          },
-          {
-            patch: {
-              id: "config_seo",
-              set: {
-                "opengraphimage.metaFont": {
-                  _type: "file",
-                  asset: {
-                    _type: "reference",
-                    _ref: ogMetaFontFileResult.document._id,
-                  },
-                },
-              },
-            },
-          },
-          {
-            patch: {
-              id: "config_seo",
-              set: {
-                color: colors.find((color: any) => color.name === "brand1")
-                  .value,
-              },
-            },
-          },
-        ],
-      },
-      "POST",
-    );
+    await patchThemeFonts({
+      SANITY_PROJECT_ID,
+      headingFont,
+      bodyFont,
+      log,
+    });
+    await patchSeoOpenGraph({
+      SANITY_PROJECT_ID,
+      headingFont,
+      colors,
+      log,
+    });
   }
 
   /**
@@ -436,6 +217,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   /**
    * Create Sanity WRITE token
    */
+
   log("Creating Sanity WRITE token");
 
   obj = await sFetch(
