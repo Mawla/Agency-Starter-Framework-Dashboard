@@ -19,8 +19,8 @@ export async function exportImportDataset({
   log: (message: string) => void;
 }) {
   const queue = new PQueue({
-    concurrency: 10,
-    interval: 1000 / 25,
+    concurrency: 25,
+    interval: 1000,
   });
 
   const assetConversionMap: Record<string, any> = {};
