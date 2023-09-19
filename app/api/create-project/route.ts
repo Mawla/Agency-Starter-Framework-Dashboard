@@ -11,6 +11,30 @@ import { patchSeoOpenGraph } from "./patch-seo-opengraph";
 import { patchThemeColors } from "./patch-theme-colors";
 import { exportImportDataset } from "./export-import-dataset";
 
+// export async function GET(_req: Request, res: NextApiResponse) {
+//   console.log("testing 123");
+
+//   const headingFont = {
+//     cssImport: `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');`,
+//     name: "Inter",
+//   };
+//   const bodyFont = {
+//     cssImport: `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');`,
+//     name: "Inter",
+//   };
+
+//   await patchThemeFonts({
+//     SANITY_PROJECT_ID: "shopb64z",
+//     headingFont,
+//     bodyFont,
+//     log: console.log,
+//   });
+
+//   return NextResponse.json({
+//     ok: 1,
+//   });
+// }
+
 /**
  * Useful links
  * - https://www.sanity.io/docs/http-mutations#0355c7dc93d2
@@ -144,6 +168,26 @@ export async function POST(_req: Request, res: NextApiResponse) {
       mutations: [
         { createIfNotExists: { _id: "config_seo", _type: "config.seo" } },
         { patch: { id: "config_seo", set: { "title.en": projectName } } },
+      ],
+    },
+    "POST",
+  );
+
+  // create general config document if it doesn't exist
+  await sFetch(
+    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+    {
+      mutations: [
+        {
+          createIfNotExists: { _id: "config_general", _type: "config.general" },
+        },
+        { patch: { id: "config_general", set: { "name.en": projectName } } },
+        {
+          patch: {
+            id: "config_general",
+            set: { domain: `${projectName}.vercel.app` },
+          },
+        },
       ],
     },
     "POST",

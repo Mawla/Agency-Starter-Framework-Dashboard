@@ -7,8 +7,8 @@ import { nanoid } from "nanoid";
  */
 
 export async function patchThemeFonts({
-  headingFont,
   SANITY_PROJECT_ID,
+  headingFont,
   bodyFont,
   log,
 }: {
@@ -18,7 +18,8 @@ export async function patchThemeFonts({
   log: (message: string) => void;
 }) {
   log(`Importing fonts`);
-  await sFetch(
+
+  const stylesheets = await sFetch(
     `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
     {
       mutations: [
@@ -33,50 +34,31 @@ export async function patchThemeFonts({
         {
           patch: {
             id: "config_theme",
-            insert: {
-              stylesheets: {
-                _key: nanoid(),
-                _type: "stylesheet",
-                name: "Heading font",
-                value: headingFont.cssImport,
-              },
-            },
+            unset: [
+              'stylesheets[name=="Heading font"]',
+              'stylesheets[name=="Body font"]',
+            ],
           },
         },
         {
           patch: {
             id: "config_theme",
             insert: {
-              stylesheets: {
-                _key: nanoid(),
-                _type: "stylesheet",
-                name: "Body font",
-                value: bodyFont.cssImport,
-              },
-            },
-          },
-        },
-        {
-          patch: {
-            id: "config_theme",
-            insert: {
-              fontFamily: {
-                _key: nanoid(),
-                name: "heading",
-                value: `${headingFont.name} ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
-              },
-            },
-          },
-        },
-        {
-          patch: {
-            id: "config_theme",
-            insert: {
-              fontFamily: {
-                _key: nanoid(),
-                name: "text",
-                value: `${bodyFont.name} ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
-              },
+              before: "stylesheets[0]",
+              items: [
+                {
+                  _key: nanoid(),
+                  _type: "stylesheet",
+                  name: "Heading font",
+                  value: headingFont.cssImport,
+                },
+                {
+                  _key: nanoid(),
+                  _type: "stylesheet",
+                  name: "Body font",
+                  value: bodyFont.cssImport,
+                },
+              ],
             },
           },
         },
@@ -84,4 +66,50 @@ export async function patchThemeFonts({
     },
     "POST",
   );
+
+  const fontFamily = await sFetch(
+    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+    {
+      mutations: [
+        {
+          patch: {
+            id: "config_theme",
+            setIfMissing: {
+              fontFamily: [],
+            },
+          },
+        },
+        {
+          patch: {
+            id: "config_theme",
+            unset: ['fontFamily[name=="heading"]', 'fontFamily[name=="text"]'],
+          },
+        },
+        {
+          patch: {
+            id: "config_theme",
+            insert: {
+              before: "fontFamily[0]",
+              items: [
+                {
+                  _key: nanoid(),
+                  name: "heading",
+                  value: `${headingFont.name}, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
+                },
+                {
+                  _key: nanoid(),
+                  name: "text",
+                  value: `${bodyFont.name}, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif`,
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
+    "POST",
+  );
+
+  log(stylesheets);
+  log(fontFamily);
 }

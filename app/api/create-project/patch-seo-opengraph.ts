@@ -76,8 +76,9 @@ export async function patchSeoOpenGraph({
           patch: {
             id: "config_seo",
             set: {
-              color: colors.find((color: any) => color.name === "brand1")
-                ?.value,
+              "opengraphimage.color": colors.find(
+                (color: any) => color.name === "brand1",
+              )?.value,
             },
           },
         },
