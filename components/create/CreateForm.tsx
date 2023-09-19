@@ -80,11 +80,11 @@ const EXAMPLE_PALETTE5: ColorType[] = [
 ];
 
 const EXAMPLE_PALETTES: { name: string; colors: ColorType[] }[] = [
-  { name: "SaaS 1", colors: EXAMPLE_PALETTE1 },
-  { name: "SaaS 2", colors: EXAMPLE_PALETTE2 },
-  { name: "SaaS 3", colors: EXAMPLE_PALETTE3 },
-  { name: "SaaS 4", colors: EXAMPLE_PALETTE4 },
-  { name: "SaaS 5", colors: EXAMPLE_PALETTE5 },
+  { name: "Modern", colors: EXAMPLE_PALETTE1 },
+  { name: "Professional", colors: EXAMPLE_PALETTE2 },
+  { name: "Playful", colors: EXAMPLE_PALETTE3 },
+  { name: "Joyful", colors: EXAMPLE_PALETTE4 },
+  { name: "Bold", colors: EXAMPLE_PALETTE5 },
 ];
 
 export default function CreateForm() {
@@ -259,7 +259,7 @@ export default function CreateForm() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectItem value="empty">An empty CMS</SelectItem>
-                    <SelectItem value="qdtcnn4r">SaaS 1 Template</SelectItem>
+                    <SelectItem value="qdtcnn4r">Growth Marketing Playbook</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
