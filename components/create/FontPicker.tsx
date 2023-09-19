@@ -143,6 +143,8 @@ export default function FontPicker({
     [&_[id^=font-picker]]:rounded-md
     [&_[id^=font-picker]]:text-sm
     [&_[id^=font-picker]_ul]:bg-white
+    [&_[id^=font-picker]_ul]:text-3xl
+    [&_[id^=font-picker]_li]:!py-6
     `}
     >
       <FontPickerReact
@@ -151,7 +153,7 @@ export default function FontPicker({
         activeFontFamily={activeFont}
         onChange={handleChange}
         scripts={["latin"]}
-        limit={150}
+        limit={250}
         sort={"trending" as any}
         filter={(font) =>
           font.family.toLowerCase().indexOf("icons") === -1 &&
