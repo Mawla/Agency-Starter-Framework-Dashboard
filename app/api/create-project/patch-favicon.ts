@@ -114,6 +114,11 @@ export async function patchFavicon({
     },
     "POST",
   );
+
+  if (faviconPatch.error) {
+    log(faviconPatch.error.items[0]);
+    return;
+  }
   log(faviconPatch);
 }
 
@@ -157,7 +162,11 @@ async function generateAndUpload({
     true,
   );
 
-  // log(uploadResult);
+  log(uploadResult);
+  if (uploadResult.error) {
+    log(uploadResult.error.items[0]);
+    return;
+  }
 
   return uploadResult.document._id;
 }
