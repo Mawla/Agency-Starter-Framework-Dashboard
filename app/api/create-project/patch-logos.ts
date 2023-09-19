@@ -129,7 +129,7 @@ async function generateAndUpload({
 
   log(uploadResult);
   if (uploadResult.error) {
-    log(uploadResult.error);
+    log(uploadResult.error.items[0]);
     return null;
   }
 
