@@ -14,7 +14,6 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
   params: { slug: string };
-  req: any;
 }) {
   const slug = params.slug;
 
