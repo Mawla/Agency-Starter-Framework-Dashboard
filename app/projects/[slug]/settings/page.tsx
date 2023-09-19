@@ -1,6 +1,5 @@
 import DeleteButton from "@/components/project/DeleteButton";
 import DeployButton from "@/components/project/DeployButton";
-import ImportDataset from "@/components/project/ImportDataset";
 import { notFound } from "next/navigation";
 
 export default async function Page({ params }: { params: { slug: string } }) {
@@ -16,7 +15,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
         <DeleteButton project={slug} />
 
         <DeployButton project={slug} />
-        <ImportDataset project={slug} />
       </div>
 
       <ul className="list-disc list-inside">
