@@ -129,35 +129,19 @@ export async function POST(_req: Request, res: NextApiResponse) {
     log("Done importing dataset");
   }
 
-  // create theme document if it doesn't exist
   await sFetch(
     `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
     {
       mutations: [
+        // create theme document if it doesn't exist
         { createIfNotExists: { _id: "config_theme", _type: "config.theme" } },
-      ],
-    },
-    "POST",
-  );
 
-  // create seo document if it doesn't exist
-  await sFetch(
-    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-    {
-      mutations: [
+        // create seo document if it doesn't exist
         { createIfNotExists: { _id: "config_seo", _type: "config.seo" } },
         { patch: { id: "config_seo", set: { "title.en": projectName } } },
         { patch: { id: "config_seo", set: { preventIndexing: true } } },
-      ],
-    },
-    "POST",
-  );
 
-  // create general config document if it doesn't exist
-  await sFetch(
-    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-    {
-      mutations: [
+        // create general config document if it doesn't exist
         {
           createIfNotExists: { _id: "config_general", _type: "config.general" },
         },
