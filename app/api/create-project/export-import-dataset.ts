@@ -43,7 +43,6 @@ export async function exportImportDataset({
       doc.mimeType || "image/jpeg",
       true,
     );
-    console.log(result.document._id);
 
     assetConversionMap[doc._id] = result.document;
   }
