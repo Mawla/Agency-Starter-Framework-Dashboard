@@ -26,7 +26,8 @@ export async function POST(_req: Request, res: NextApiResponse) {
   }
 
   const params = await _req.json();
-  const projectName = `sgw-${slugify(params.projectName)}`;
+  const projectName = slugify(params.projectName);
+  const sgwProjectName = `sgw-${projectName}`;
   const colors = params.colors;
   const dataset = params.dataset;
   const headingFont = params.headingFont;
@@ -164,7 +165,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
         {
           patch: {
             id: "config_general",
-            set: { domain: `${projectName}.vercel.app` },
+            set: { domain: `${sgwProjectName}.vercel.app` },
           },
         },
       ],
@@ -312,7 +313,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   await sFetch(
     `https://api.sanity.io/v2021-06-07/projects/${SANITY_PROJECT_ID}/cors`,
     {
-      origin: `https://${projectName}.vercel.app`,
+      origin: `https://${sgwProjectName}.vercel.app`,
       allowCredentials: true,
     },
   );
@@ -335,7 +336,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
   log("Creating Vercel project");
 
   const vercelResult = await vFetch(`https://api.vercel.com/v9/projects`, {
-    name: projectName,
+    name: sgwProjectName,
     commandForIgnoringBuildStep:
       'if [ "$VERCEL_ENV" == "production" ]; then exit 1; else exit 0; fi',
     environmentVariables: environmentVariables.map(({ key, value }) => ({
@@ -380,17 +381,17 @@ export async function POST(_req: Request, res: NextApiResponse) {
     "GET",
   );
 
+  const VERCEL_REDEPLOY_HOOK = vercelProject.link.deployHooks[0].url;
+  await fetch(VERCEL_REDEPLOY_HOOK);
+
   log("Updating Sanity project with Vercel deploy hook");
 
-  const VERCEL_REDEPLOY_HOOK = vercelProject.link.deployHooks[0].url;
   sanityServerClient
     .patch(projectId)
     .set({ "vercel.deploy_hook": VERCEL_REDEPLOY_HOOK })
     .commit();
 
   log("Deploying Vercel project with hook");
-
-  await fetch(VERCEL_REDEPLOY_HOOK);
 
   log("Done");
 
