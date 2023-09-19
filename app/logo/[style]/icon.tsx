@@ -15,7 +15,7 @@ export default async function Icon({ params }: { params: { style: string } }) {
     new URL("../../../public/Inter-Light.ttf", import.meta.url),
   ).then((res) => res.arrayBuffer());
 
-  const width = name.length * 23;
+  const width = name.length * 15;
   const height = 30;
 
   const projectName = name.split("_");
@@ -26,12 +26,12 @@ export default async function Icon({ params }: { params: { style: string } }) {
     (
       <div
         style={{
-          fontSize: `30px`,
+          fontSize: 20,
           width: "100%",
           height: "100%",
-          lineHeight: 0.5,
           fontWeight: "bold",
           display: "flex",
+          gap: 4,
           alignItems: "center",
           color: `#${color}`,
           textTransform: "uppercase",
@@ -44,11 +44,10 @@ export default async function Icon({ params }: { params: { style: string } }) {
         >
           {firstWord}
         </span>
-        &nbsp;
         <span
           style={{
             fontWeight: 300,
-            color: "red",
+            color: `#${color}`,
           }}
         >
           {lastWords}
