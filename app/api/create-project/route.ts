@@ -10,30 +10,7 @@ import { patchThemeFonts } from "./patch-theme-fonts";
 import { patchSeoOpenGraph } from "./patch-seo-opengraph";
 import { patchThemeColors } from "./patch-theme-colors";
 import { exportImportDataset } from "./export-import-dataset";
-
-// export async function GET(_req: Request, res: NextApiResponse) {
-//   console.log("testing 123");
-
-//   const headingFont = {
-//     cssImport: `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');`,
-//     name: "Inter",
-//   };
-//   const bodyFont = {
-//     cssImport: `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');`,
-//     name: "Inter",
-//   };
-
-//   await patchThemeFonts({
-//     SANITY_PROJECT_ID: "shopb64z",
-//     headingFont,
-//     bodyFont,
-//     log: console.log,
-//   });
-
-//   return NextResponse.json({
-//     ok: 1,
-//   });
-// }
+import { patchFavicon } from "./patch-favicon";
 
 /**
  * Useful links
@@ -223,6 +200,17 @@ export async function POST(_req: Request, res: NextApiResponse) {
       log,
     });
   }
+
+  /**
+   * Import favicon
+   */
+
+  await patchFavicon({
+    SANITY_PROJECT_ID,
+    projectName,
+    colors,
+    log,
+  });
 
   /**
    * Create random tokens
