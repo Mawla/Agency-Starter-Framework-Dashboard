@@ -153,7 +153,7 @@ export default function FontPicker({
         activeFontFamily={activeFont}
         onChange={handleChange}
         scripts={["latin"]}
-        limit={250}
+        limit={300}
         sort={"trending" as any}
         filter={(font) =>
           font.family.toLowerCase().indexOf("icons") === -1 &&
