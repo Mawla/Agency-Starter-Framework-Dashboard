@@ -11,6 +11,7 @@ import { patchSeoOpenGraph } from "./patch-seo-opengraph";
 import { patchThemeColors } from "./patch-theme-colors";
 import { exportImportDataset } from "./export-import-dataset";
 import { patchFavicon } from "./patch-favicon";
+import { patchLogos } from "./patch-logos";
 
 /**
  * Useful links
@@ -145,6 +146,7 @@ export async function POST(_req: Request, res: NextApiResponse) {
       mutations: [
         { createIfNotExists: { _id: "config_seo", _type: "config.seo" } },
         { patch: { id: "config_seo", set: { "title.en": projectName } } },
+        { patch: { id: "config_seo", set: { preventIndexing: true } } },
       ],
     },
     "POST",
@@ -206,6 +208,17 @@ export async function POST(_req: Request, res: NextApiResponse) {
    */
 
   await patchFavicon({
+    SANITY_PROJECT_ID,
+    projectName,
+    colors,
+    log,
+  });
+
+  /**
+   * Import logos
+   */
+
+  await patchLogos({
     SANITY_PROJECT_ID,
     projectName,
     colors,

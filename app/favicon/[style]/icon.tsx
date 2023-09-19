@@ -8,7 +8,7 @@ export default async function Icon({ params }: { params: { style: string } }) {
   const [letter, color1, color2, size] = params.style.split("-");
 
   const interSemiBold = fetch(
-    new URL("./Inter-SemiBold.ttf", import.meta.url),
+    new URL("../../../public/Inter-SemiBold.ttf", import.meta.url),
   ).then((res) => res.arrayBuffer());
 
   return new ImageResponse(
