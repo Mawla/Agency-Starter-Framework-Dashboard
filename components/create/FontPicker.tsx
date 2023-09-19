@@ -94,13 +94,14 @@ export default function FontPicker({
 
     // generate a css import like
     // @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;1,400&display=swap')
-    const cssImport = `https://fonts.googleapis.com/css2?family=${nextFont.family.replace(
+    const cssImportURL = `https://fonts.googleapis.com/css2?family=${nextFont.family.replace(
       / /g,
       "+",
     )}:ital,wght@${nextFont.variants
       .filter((variant) => variant.indexOf("italic") === -1)
       .map((variant) => `0,${variant === "regular" ? "400" : variant}`)
       .join(";")};1,400&display=swap&subset=latin`;
+    const cssImport = `@import url('${cssImportURL}');`;
 
     const boldFontFileURL =
       nextFont.files?.[700] ||
