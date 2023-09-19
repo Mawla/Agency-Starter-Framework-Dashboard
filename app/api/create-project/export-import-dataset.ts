@@ -92,6 +92,10 @@ export async function exportImportDataset({
 
   let mutationsString = JSON.stringify(mutations);
   Object.entries(assetConversionMap).forEach(([oldId, uploadAssetDoc]) => {
+    if (uploadAssetDoc._id) {
+      log(`Missing upload doc ${uploadAssetDoc?._id}`);
+      return;
+    }
     mutationsString = mutationsString.replaceAll(oldId, uploadAssetDoc._id);
   });
 
