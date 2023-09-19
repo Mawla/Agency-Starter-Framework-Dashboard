@@ -58,8 +58,8 @@ const EXAMPLE_PALETTE2: ColorType[] = [
 
 const EXAMPLE_PALETTE3: ColorType[] = [
   { name: "brand1", value: "#3F51B5" },
-  { name: "brand2", value: "#757de8" },
-  { name: "brand3", value: "#dedeff" },
+  { name: "brand2", value: "#dedeff" },
+  { name: "brand3", value: "#757de8" },
   { name: "brand4", value: "#2196F3" },
   { name: "brand5", value: "#003f8f" },
 ];
@@ -67,8 +67,8 @@ const EXAMPLE_PALETTE3: ColorType[] = [
 const EXAMPLE_PALETTE4: ColorType[] = [
   { name: "brand1", value: "#eb9c64" },
   { name: "brand2", value: "#ff8789" },
-  { name: "brand3", value: "#554e4f" },
-  { name: "brand4", value: "#8fbf9f" },
+  { name: "brand3", value: "#8fbf9f" },
+  { name: "brand4", value: "#554e4f" },
   { name: "brand5", value: "#F5ECD7" },
 ];
 
