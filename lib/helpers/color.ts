@@ -142,12 +142,12 @@ export const hsvaToRgba = ({ h, s, v, a }: HsvaColor): RgbaColor => {
     b = v * (1 - s),
     c = v * (1 - (h - hh) * s),
     d = v * (1 - (1 - h + hh) * s),
-    module = hh % 6;
+    m = hh % 6;
 
   return {
-    r: round([v, c, b, b, d, v][module] * 255),
-    g: round([d, v, v, c, b, b][module] * 255),
-    b: round([b, b, d, v, v, c][module] * 255),
+    r: round([v, c, b, b, d, v][m] * 255),
+    g: round([d, v, v, c, b, b][m] * 255),
+    b: round([b, b, d, v, v, c][m] * 255),
     a: round(a, 2),
   };
 };
