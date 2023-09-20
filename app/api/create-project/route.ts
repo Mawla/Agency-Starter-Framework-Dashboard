@@ -136,23 +136,6 @@ export async function POST(_req: Request, res: NextApiResponse) {
   obj = await q.json();
   const SANITY_WEBHOOK_SECRET = obj.join("_");
 
-  // set CMS preview secret
-  await sFetch(
-    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-    {
-      mutations: [
-        { createIfNotExists: { _id: "config_cms", _type: "config.cms" } },
-        {
-          patch: {
-            _id: "config_seo",
-            set: { previewSecret: SANITY_PREVIEW_SECRET },
-          },
-        },
-      ],
-    },
-    "POST",
-  );
-
   /**
    * Create Sanity WRITE token
    */
@@ -323,6 +306,15 @@ export async function POST(_req: Request, res: NextApiResponse) {
           patch: {
             id: "config_general",
             set: { domain: `${sgwProjectName}.vercel.app` },
+          },
+        },
+
+        // create cms config
+        { createIfNotExists: { _id: "config_cms", _type: "config.cms" } },
+        {
+          patch: {
+            _id: "config_seo",
+            set: { previewSecret: SANITY_PREVIEW_SECRET },
           },
         },
       ],
