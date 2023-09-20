@@ -19,7 +19,7 @@ export async function patchSeoOpenGraph({
   colors: ColorType[];
   log: (message: string) => void;
 }) {
-  log(`Importing opengraph ttf fonts`);
+  console.log(`Importing opengraph ttf fonts`);
   const ogTitleFontFile = await nodeFetch(headingFont.boldFontFileURL);
   const ogTitleFontFileBuffer = await ogTitleFontFile.buffer();
   const ogTitleFontFileResult = await sFetch(
@@ -39,8 +39,10 @@ export async function patchSeoOpenGraph({
     true,
   );
 
+  console.log(ogMetaFontFileResult);
+
   // set font references
-  await sFetch(
+  const opengraphPatch = await sFetch(
     `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
     {
       mutations: [
@@ -86,4 +88,5 @@ export async function patchSeoOpenGraph({
     },
     "POST",
   );
+  console.log(opengraphPatch);
 }

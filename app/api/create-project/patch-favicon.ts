@@ -152,7 +152,7 @@ async function generateAndUpload({
   );
   const downloadBuffer = await downloadResult.buffer();
 
-  log(`uploading ${filename}`);
+  console.log(`uploading ${filename}`);
 
   const uploadResult = await sFetch(
     `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-03-25/assets/files/production`,
@@ -162,9 +162,9 @@ async function generateAndUpload({
     true,
   );
 
-  log(uploadResult);
+  console.log(uploadResult);
   if (uploadResult.error) {
-    log(uploadResult.error.items[0]);
+    console.log(uploadResult.error.items[0]);
     return;
   }
 

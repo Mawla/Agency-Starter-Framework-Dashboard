@@ -110,6 +110,6 @@ export async function patchThemeFonts({
     "POST",
   );
 
-  log(stylesheets);
-  log(fontFamily);
+  console.log(stylesheets);
+  console.log(fontFamily);
 }

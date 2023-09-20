@@ -127,9 +127,9 @@ async function generateAndUpload({
     true,
   );
 
-  log(uploadResult);
+  console.log(uploadResult);
   if (uploadResult.error) {
-    log(uploadResult.error.items[0]);
+    console.log(uploadResult.error.items[0]);
     return null;
   }
 

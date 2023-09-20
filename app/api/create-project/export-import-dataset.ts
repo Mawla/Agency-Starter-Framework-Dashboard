@@ -19,8 +19,8 @@ export async function exportImportDataset({
   log: (message: string) => void;
 }) {
   const queue = new PQueue({
-    concurrency: 20,
-    interval: 1000 / 25,
+    concurrency: 25,
+    interval: 1000,
   });
 
   const assetConversionMap: Record<string, any> = {};
@@ -44,7 +44,7 @@ export async function exportImportDataset({
       true,
     );
     if (result.error) {
-      log(`error: ${result.error}`);
+      console.log(`error: ${result.error}`);
       return null;
     }
 

@@ -16,7 +16,7 @@ export async function patchThemeColors({
   log: (message: string) => void;
 }) {
   log(`Importing color palette`);
-  await sFetch(
+  const colorsPatch = await sFetch(
     `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
     {
       mutations: [
@@ -37,4 +37,5 @@ export async function patchThemeColors({
     },
     "POST",
   );
+  console.log(colorsPatch);
 }
