@@ -45,7 +45,7 @@ export async function exportImportDataset({
     );
 
     if (result.error) {
-      log(result.error.items[0]);
+      log(result.error);
       return null;
     }
 
