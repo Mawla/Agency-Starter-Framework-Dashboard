@@ -19,7 +19,7 @@ export async function exportImportDataset({
   log: (message: string) => void;
 }) {
   const queue = new PQueue({
-    concurrency: 1,
+    concurrency: 4,
     interval: 1000 / 25,
   });
 
@@ -43,13 +43,13 @@ export async function exportImportDataset({
       doc.mimeType || "image/jpeg",
       true,
     );
-
     if (result.error) {
-      log(result.error);
+      log(`error: ${result.error}`);
       return null;
     }
 
-    assetConversionMap[doc._id] = result.document;
+    console.log(`uploaded ${result.document._id}`);
+    assetConversionMap[doc._id] = result.document._id;
   }
 
   // import template dataset
@@ -74,7 +74,7 @@ export async function exportImportDataset({
   await queue.onIdle();
   log("Asset download/upload queue is idle, starting mutation import");
 
-  log(JSON.stringify(assetConversionMap));
+  // log(JSON.stringify(assetConversionMap));
 
   const mutations = templateData.result
     // filter out system documents
@@ -94,12 +94,12 @@ export async function exportImportDataset({
     });
 
   let mutationsString = JSON.stringify(mutations);
-  Object.entries(assetConversionMap).forEach(([oldId, uploadAssetDoc]) => {
-    if (uploadAssetDoc._id) {
-      log(`Missing upload doc ${uploadAssetDoc?._id}`);
+  Object.entries(assetConversionMap).forEach(([oldId, uploadAssetId]) => {
+    if (!uploadAssetId) {
+      console.log(`Missing upload doc ${uploadAssetId}`);
       return;
     }
-    mutationsString = mutationsString.replaceAll(oldId, uploadAssetDoc._id);
+    mutationsString = mutationsString.replaceAll(oldId, uploadAssetId);
   });
 
   const importAction = await sFetch(
