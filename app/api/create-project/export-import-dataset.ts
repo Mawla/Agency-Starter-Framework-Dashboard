@@ -19,7 +19,7 @@ export async function exportImportDataset({
   log: (message: string) => void;
 }) {
   const queue = new PQueue({
-    concurrency: 4,
+    concurrency: 20,
     interval: 1000 / 25,
   });
 
