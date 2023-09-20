@@ -20,7 +20,7 @@ export async function exportImportDataset({
 }) {
   const queue = new PQueue({
     concurrency: 10,
-    interval: 1000,
+    interval: 1000 / 25,
   });
 
   const assetConversionMap: Record<string, any> = {};
@@ -37,7 +37,7 @@ export async function exportImportDataset({
 
     console.log(`uploading ${doc.originalFilename}`);
     const result = await sFetch(
-      `https://${sanityId}.api.sanity.io/v2021-03-25/assets/images/production`,
+      `https://${sanityId}.api.sanity.io/v2021-03-25/assets/images/production?visibility=deferred`,
       imageBuffer,
       "POST",
       doc.mimeType || "image/jpeg",
