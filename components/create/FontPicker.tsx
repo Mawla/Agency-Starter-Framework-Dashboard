@@ -1,7 +1,7 @@
 "use client";
 
 import FontPickerReact from "font-picker-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type FontInfo = {
   cssImport: string;
@@ -86,7 +86,27 @@ export default function FontPicker({
   name: string;
   onChange: (fontInfo: FontInfo) => void;
 }) {
-  const [activeFont, setActiveFont] = useState("Roboto");
+  const [activeFont, setActiveFont] = useState("");
+
+  const fontPicker = useRef(null);
+
+  useEffect(() => {
+    if (!fontPicker.current) return;
+
+    function setFonts() {
+      try {
+        fontPickerElement.setActiveFontFamily(
+          name === "heading" ? "Roboto" : "Nunito Sans",
+        );
+      } catch (e) {
+        setTimeout(setFonts, 100);
+      }
+    }
+
+    const fontPickerElement = fontPicker.current as any;
+
+    setTimeout(setFonts, 100);
+  }, [name]);
 
   function handleChange(nextFont: Font) {
     console.log(nextFont);
@@ -150,6 +170,7 @@ export default function FontPicker({
     `}
     >
       <FontPickerReact
+        ref={fontPicker}
         pickerId={name}
         apiKey={process.env.NEXT_PUBLIC_GOOGLE_FONTS_API_KEY as string}
         activeFontFamily={activeFont}
