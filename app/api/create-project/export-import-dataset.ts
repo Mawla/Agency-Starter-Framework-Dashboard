@@ -19,7 +19,7 @@ export async function exportImportDataset({
   log: (message: string) => void;
 }) {
   const queue = new PQueue({
-    concurrency: 25,
+    concurrency: 20,
     interval: 1000,
   });
 
@@ -43,7 +43,8 @@ export async function exportImportDataset({
       doc.mimeType || "image/jpeg",
       true,
     );
-    if (result.error) {
+
+    if (result.error || !result.document?._id) {
       console.log(`error: ${result.error}`);
       return null;
     }
