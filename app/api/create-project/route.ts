@@ -120,97 +120,6 @@ export async function POST(_req: Request, res: NextApiResponse) {
   );
 
   /**
-   * Export template dataset and import into new dataset
-   */
-
-  if (dataset !== "empty") {
-    log(`Importing dataset ${dataset}`);
-    await exportImportDataset({ SANITY_PROJECT_ID, dataset, log });
-    log("Done importing dataset");
-  }
-
-  await sFetch(
-    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
-    {
-      mutations: [
-        // create theme document if it doesn't exist
-        { createIfNotExists: { _id: "config_theme", _type: "config.theme" } },
-
-        // create seo document if it doesn't exist
-        { createIfNotExists: { _id: "config_seo", _type: "config.seo" } },
-        { patch: { id: "config_seo", set: { "title.en": projectName } } },
-        { patch: { id: "config_seo", set: { preventIndexing: true } } },
-
-        // create general config document if it doesn't exist
-        {
-          createIfNotExists: { _id: "config_general", _type: "config.general" },
-        },
-        { patch: { id: "config_general", set: { "name.en": projectName } } },
-        {
-          patch: {
-            id: "config_general",
-            set: { domain: `${sgwProjectName}.vercel.app` },
-          },
-        },
-      ],
-    },
-    "POST",
-  );
-
-  /**
-   * Import colors
-   */
-
-  if (colors) {
-    await patchThemeColors({
-      SANITY_PROJECT_ID,
-      colors,
-      log,
-    });
-  }
-
-  /**
-   * Import fonts
-   */
-
-  if (headingFont || bodyFont) {
-    await patchThemeFonts({
-      SANITY_PROJECT_ID,
-      headingFont,
-      bodyFont,
-      log,
-    });
-    await patchSeoOpenGraph({
-      SANITY_PROJECT_ID,
-      headingFont,
-      colors,
-      log,
-    });
-  }
-
-  /**
-   * Import favicon
-   */
-
-  await patchFavicon({
-    SANITY_PROJECT_ID,
-    projectName,
-    colors,
-    log,
-  });
-
-  /**
-   * Import logos
-   */
-
-  await patchLogos({
-    SANITY_PROJECT_ID,
-    projectName,
-    colors,
-    log,
-  });
-
-  /**
    * Create random tokens
    */
   log("Creating random tokens");
@@ -376,6 +285,103 @@ export async function POST(_req: Request, res: NextApiResponse) {
     .commit();
 
   log("Deploying Vercel project with hook");
+
+  /**
+   * Vercel and Sanity set up are now done
+   * Vercel deployment is in progress and will take a few minutes
+   * meanwhile we can import the export the template dataset
+   * and import it into the new project
+   *
+   * This function can only run for max 60 seconds, so will always
+   * be done or timed out before the Vercel deployment is done
+   */
+
+  if (dataset !== "empty") {
+    log(`Importing dataset ${dataset}`);
+    await exportImportDataset({ SANITY_PROJECT_ID, dataset, log });
+    log("Done importing dataset");
+  }
+
+  await sFetch(
+    `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
+    {
+      mutations: [
+        // create theme document if it doesn't exist
+        { createIfNotExists: { _id: "config_theme", _type: "config.theme" } },
+
+        // create seo document if it doesn't exist
+        { createIfNotExists: { _id: "config_seo", _type: "config.seo" } },
+        { patch: { id: "config_seo", set: { "title.en": projectName } } },
+        { patch: { id: "config_seo", set: { preventIndexing: true } } },
+
+        // create general config document if it doesn't exist
+        {
+          createIfNotExists: { _id: "config_general", _type: "config.general" },
+        },
+        { patch: { id: "config_general", set: { "name.en": projectName } } },
+        {
+          patch: {
+            id: "config_general",
+            set: { domain: `${sgwProjectName}.vercel.app` },
+          },
+        },
+      ],
+    },
+    "POST",
+  );
+
+  /**
+   * Import colors
+   */
+
+  if (colors) {
+    await patchThemeColors({
+      SANITY_PROJECT_ID,
+      colors,
+      log,
+    });
+  }
+
+  /**
+   * Import fonts
+   */
+
+  if (headingFont || bodyFont) {
+    await patchThemeFonts({
+      SANITY_PROJECT_ID,
+      headingFont,
+      bodyFont,
+      log,
+    });
+    await patchSeoOpenGraph({
+      SANITY_PROJECT_ID,
+      headingFont,
+      colors,
+      log,
+    });
+  }
+
+  /**
+   * Import favicon
+   */
+
+  await patchFavicon({
+    SANITY_PROJECT_ID,
+    projectName,
+    colors,
+    log,
+  });
+
+  /**
+   * Import logos
+   */
+
+  await patchLogos({
+    SANITY_PROJECT_ID,
+    projectName,
+    colors,
+    log,
+  });
 
   log("Done");
 
