@@ -44,7 +44,7 @@ export async function exportImportDataset({
       true,
     );
 
-    log(result);
+    log(JSON.stringify(result.document));
 
     assetConversionMap[doc._id] = result.document;
   }
