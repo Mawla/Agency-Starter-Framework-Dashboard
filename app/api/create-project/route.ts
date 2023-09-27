@@ -19,6 +19,9 @@ import { patchLogos } from "./patch-logos";
  * - https://vercel.com/docs/rest-api/endpoints#projects
  */
 
+export const maxDuration = 5 * 60; // This function can run for a maximum of 5 minutes
+export const dynamic = "force-dynamic";
+
 export async function POST(_req: Request, res: NextApiResponse) {
   const { userId }: { userId: string | null } = auth();
   if (!userId) {
@@ -310,11 +313,26 @@ export async function POST(_req: Request, res: NextApiResponse) {
         },
 
         // create cms config
-        { createIfNotExists: { _id: "config_cms", _type: "config.cms" } },
+        {
+          createIfNotExists: { _id: "secret.config_cms", _type: "config.cms" },
+        },
         {
           patch: {
-            _id: "config_seo",
+            _id: "secret.config_cms",
             set: { previewSecret: SANITY_PREVIEW_SECRET },
+          },
+        },
+        // create deployment config
+        {
+          createIfNotExists: {
+            _id: "secret.config_deployment",
+            _type: "config.deployment",
+          },
+        },
+        {
+          patch: {
+            _id: "secret.config_deployment",
+            set: { deployHook: VERCEL_REDEPLOY_HOOK },
           },
         },
       ],
