@@ -292,47 +292,35 @@ export async function POST(_req: Request, res: NextApiResponse) {
     `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-09-14/data/mutate/production`,
     {
       mutations: [
-        // create theme document if it doesn't exist
-        { createIfNotExists: { _id: "config_theme", _type: "config.theme" } },
-
-        // create seo document if it doesn't exist
-        { createIfNotExists: { _id: "config_seo", _type: "config.seo" } },
-        { patch: { id: "config_seo", set: { "title.en": projectName } } },
-        { patch: { id: "config_seo", set: { preventIndexing: true } } },
-
-        // create general config document if it doesn't exist
+        { createOrReplace: { _id: "config_theme", _type: "config.theme" } },
         {
-          createIfNotExists: { _id: "config_general", _type: "config.general" },
-        },
-        { patch: { id: "config_general", set: { "name.en": projectName } } },
-        {
-          patch: {
-            id: "config_general",
-            set: { domain: `${sgwProjectName}.vercel.app` },
+          createOrReplace: {
+            _id: "config_seo",
+            _type: "config.seo",
+            "title.en": projectName,
+            preventIndexing: true,
           },
         },
-
-        // create cms config
         {
-          createIfNotExists: { _id: "secret.config_cms", _type: "config.cms" },
+          createOrReplace: {
+            _id: "config_general",
+            _type: "config.general",
+            "name.en": projectName,
+            domain: `${sgwProjectName}.vercel.app`,
+          },
         },
         {
-          patch: {
+          createOrReplace: {
             _id: "secret.config_cms",
-            set: { previewSecret: SANITY_PREVIEW_SECRET },
+            _type: "config.cms",
+            previewSecret: SANITY_PREVIEW_SECRET,
           },
         },
-        // create deployment config
         {
-          createIfNotExists: {
+          createOrReplace: {
             _id: "secret.config_deployment",
             _type: "config.deployment",
-          },
-        },
-        {
-          patch: {
-            _id: "secret.config_deployment",
-            set: { deployHook: VERCEL_REDEPLOY_HOOK },
+            deployHook: VERCEL_REDEPLOY_HOOK,
           },
         },
       ],
