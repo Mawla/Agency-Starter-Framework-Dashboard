@@ -12,6 +12,7 @@ import { patchThemeColors } from "./patch-theme-colors";
 import { exportImportDataset } from "./export-import-dataset";
 import { patchFavicon } from "./patch-favicon";
 import { patchLogos } from "./patch-logos";
+import { clerkClient } from "@clerk/nextjs";
 
 /**
  * Useful links
@@ -380,6 +381,27 @@ export async function POST(_req: Request, res: NextApiResponse) {
     colors,
     log,
   });
+
+  // invite users
+  await sFetch(
+    `https://api.sanity.io/v2021-06-07/invitations/project/${SANITY_PROJECT_ID}`,
+    { email: "dan@mawla.ie", role: "administrator" },
+  );
+  await sFetch(
+    `https://api.sanity.io/v2021-06-07/invitations/project/${SANITY_PROJECT_ID}`,
+    { email: "arjen@mawla.ie", role: "administrator" },
+  );
+
+  const user = await clerkClient.users.getUser(userId);
+  if (user) {
+    const email = user.emailAddresses[0].emailAddress;
+    if (email && !["arjen@mawla.ie", "dan@mawla.ie"].includes(email)) {
+      await sFetch(
+        `https://api.sanity.io/v2021-06-07/invitations/project/${SANITY_PROJECT_ID}`,
+        { email: email, role: "administrator" },
+      );
+    }
+  }
 
   log("Done");
 
