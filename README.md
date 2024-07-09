@@ -1,4 +1,9 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# This is a dashboard for Agencies to create, manage and edit their customer websites.
+![CleanShot 2024-07-09 at 16 49 41](https://github.com/Mawla/Agency-Starter-Framework-Dashboard/assets/1926968/745788ee-4a3a-4697-9a86-ce2653a4311e)
+
+![image](https://github.com/Mawla/Agency-Starter-Framework-Dashboard/assets/1926968/a2d9136a-ef35-4c90-8a85-922a5c8b37a0)
+
+Built on Sanity and NextJS
 
 ## Getting Started
 
